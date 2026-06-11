@@ -1,0 +1,43 @@
+# typirOS — What-Ifs
+
+Speculative feature backlog (PRD §19.8). Agents add entries every working
+session. Triage states: **accepted** (→ tasks.md), **parked**, **rejected**.
+
+Format: `WIF-NNN · status · phase estimate · one-line rationale`
+
+---
+
+## Open / Parked
+
+- **WIF-005 · parked · P3** — What if the OS learned macros automatically?
+  Detect repeated command sequences ("weather" then "calendar" every morning)
+  and offer: "You do this daily — want 'gm' to do both?" Compounds intelligence
+  (PRD principle 5) without the user designing macros.
+- **WIF-006 · parked · P3** — What if `/missed` digests were prioritized by
+  the knowledge graph? Sender importance (starred, frequency, recency of
+  conversation) orders the digest, so the pull is glanceable in one line.
+- **WIF-007 · parked · P4** — What if Focus Sessions had a hardware
+  expression? A physical slider/switch (Phase 5 hardware) that enters Quiet —
+  friction-by-design made tactile.
+- **WIF-008 · parked · P2** — What if the shell had a "dry run" prefix?
+  `? message philip running late` shows exactly what would be dispatched
+  (recipient, channel, SIM) without sending. Trust-building during onboarding.
+- **WIF-009 · parked · P3** — What if undo were a grammar primitive? "undo"
+  within N seconds recalls an outbound message (where channel supports it),
+  cancels a just-set alarm, reverts a setting. Act-first-confirm-short needs
+  a safety net.
+
+## Accepted (moved to tasks.md / PRD)
+
+- **WIF-001 · accepted → PRD §19.1 · P1** — What if notifications were
+  pull-based by default? Became the Quiet model.
+- **WIF-002 · accepted → PRD §19.3 · P1** — What if slash commands bypassed
+  the model entirely? Became the deterministic pre-parser.
+- **WIF-003 · accepted → PRD §19.2 · P1/P3** — What if focus were an OS
+  primitive, not an app? Became Focus Sessions.
+- **WIF-004 · accepted → PRD §19.6 · P5** — What if a hardware keyboard were
+  first-class? Folded into hardware-PRD inputs.
+
+## Rejected
+
+*(none yet)*

@@ -1,0 +1,16 @@
+call lena
+end call
+message philip sharma running late, start without me
+set alarm for 7am
+set brightness to low
+turn off wifi
+remind me to call mom at 6pm
+set a timer for 10 minutes
+message phil
+1
+dinner is at 8
+/sim sms lena: are we still on for tomorrow?
+call lena through secondary
+end call
+what did i miss
+/quit
