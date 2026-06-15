@@ -29,6 +29,19 @@ What works:
 - **Quiet queue (PRD §19.1):** inbound events queue silently (`/sim sms
   lena: hey` to simulate); only a `•N` prompt indicator appears; pull the
   digest with `what did i miss`
+- **Session memory / pronoun resolution (PRD §13):** `call her back`,
+  `text them` resolve to the last contact you called, messaged, or heard
+  from
+- **Correction flow (PRD §11):** after a call or message, `no, secondary` /
+  `no, primary` silently re-dispatches the same action on the other SIM and
+  the OS remembers the preference
+- **Message-body capture (PRD §10):** `message lena` (single unambiguous
+  contact, no body) prompts `What should it say?` before sending
+- **Macros (PRD §19.3):** `when I type gm, what did i miss and set an alarm
+  for 7am` defines `gm`; typing `gm` runs both actions and prints both
+  results
+- **Recall / edit (PRD §19.3):** `again` re-runs the last command; `edit`
+  prints it back for retyping with changes
 
 ## Architecture
 

@@ -19,4 +19,7 @@ class Pending:
 class SessionMemory:
     last_contact: Contact | None = None
     last_sim: str = "Primary"
+    last_dispatch: tuple[str, dict] | None = None
+    last_raw: str | None = None
+    macros: dict[str, list[str]] = field(default_factory=dict)
     pending: Pending | None = None

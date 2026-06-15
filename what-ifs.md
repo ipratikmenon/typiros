@@ -9,6 +9,13 @@ Format: `WIF-NNN · status · phase estimate · one-line rationale`
 
 ## Open / Parked
 
+- **WIF-010 · parked · P2** — What if "no, X" were a general correction
+  primitive, not just SIM? M2 implements `no, secondary`/`no, primary` by
+  re-dispatching `last_dispatch` with a swapped `sim`. The same shape could
+  fix any slot of the last action — "no, whatsapp" (channel), "no, 8pm"
+  (alarm time), "no, mom" (recipient) — by detecting which slot the
+  correction value fits and swapping it in. Needs a slot-type registry per
+  tool so "no, X" doesn't misfire on an unrelated tool.
 - **WIF-005 · parked · P3** — What if the OS learned macros automatically?
   Detect repeated command sequences ("weather" then "calendar" every morning)
   and offer: "You do this daily — want 'gm' to do both?" Compounds intelligence

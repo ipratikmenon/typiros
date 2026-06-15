@@ -13,4 +13,14 @@ dinner is at 8
 call lena through secondary
 end call
 what did i miss
+call her back
+no, primary
+end call
+message lena
+running 5 minutes late
+/sim call mom: missed your call
+when i type gm, what did i miss and set an alarm for 7am
+gm
+edit
+again
 /quit

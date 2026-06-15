@@ -5,14 +5,18 @@ line; the quiet-queue indicator sits in the prompt. M5 swaps this layer
 for a TUI without touching intent/bridge/backends.
 """
 
+import re
 import sys
 
-from . import intent
+from . import contacts, intent
 from .bridge import Bridge
 from .contacts import Contact
 from .intent import Clarify, Quit, Say, ToolCall
 from .memory import Pending, SessionMemory
 from .notifications import QuietQueue
+
+CORRECTION_RE = re.compile(r"no,?\s+(primary|secondary)\.?", re.IGNORECASE)
+MACRO_DEF_RE = re.compile(r"when i type (\S+),\s*(.+)", re.IGNORECASE)
 
 
 class Shell:
@@ -34,7 +38,22 @@ class Shell:
             if resolved is not None:
                 return resolved
 
-        result = intent.parse(raw)
+        stripped = raw.strip()
+        low = stripped.lower()
+
+        if low in ("again", "/again"):
+            return self._recall()
+        if low in ("edit", "/edit"):
+            return self._show_last()
+        if m := CORRECTION_RE.fullmatch(stripped):
+            return self._correct(m.group(1))
+        if m := MACRO_DEF_RE.fullmatch(stripped.rstrip(".")):
+            return self._define_macro(m.group(1).lower(), m.group(2))
+        if low in self.memory.macros:
+            return self._run_macro(low)
+
+        text = intent.resolve_pronouns(stripped, self.memory.last_contact)
+        result = intent.parse(text)
         if isinstance(result, Quit):
             return None
         if isinstance(result, Say):
@@ -43,8 +62,48 @@ class Shell:
             self.memory.pending = result.pending
             return self._render_clarify(result)
         if isinstance(result, ToolCall):
+            self.memory.last_raw = stripped
             return self.bridge.dispatch(result.tool, result.args)
         return ""
+
+    # ----- correction flow (PRD §11: "No, Secondary." OS remembers) -----
+
+    def _correct(self, sim_word: str) -> str:
+        if not self.memory.last_dispatch:
+            return "Nothing to correct yet."
+        tool, args = self.memory.last_dispatch
+        new_sim = sim_word.title()
+        if tool == "make_call":
+            self.bridge.dispatch("end_call", {})  # hang up before redialling
+        return self.bridge.dispatch(tool, {**args, "sim": new_sim})
+
+    # ----- macros (PRD §19.3: "when I type X, do A and B") -----
+
+    def _define_macro(self, trigger: str, action_text: str) -> str:
+        parts = [p.strip() for p in re.split(r"\band\b", action_text, flags=re.IGNORECASE) if p.strip()]
+        for part in parts:
+            if not isinstance(intent.parse(part), ToolCall):
+                return f'I can only macro things I already understand — "{part}" isn\'t on-grammar yet.'
+        self.memory.macros[trigger] = parts
+        plural = "s" if len(parts) != 1 else ""
+        return f'Got it — typing "{trigger}" will now do {len(parts)} thing{plural}.'
+
+    def _run_macro(self, trigger: str) -> str:
+        responses = [self.handle(part) or "" for part in self.memory.macros[trigger]]
+        self.memory.last_raw = trigger
+        return "\n".join(r for r in responses if r)
+
+    # ----- recall / edit last command (PRD §19.3) -----
+
+    def _recall(self) -> str:
+        if not self.memory.last_raw:
+            return "Nothing to repeat yet."
+        return self.handle(self.memory.last_raw) or ""
+
+    def _show_last(self) -> str:
+        if not self.memory.last_raw:
+            return "Nothing to edit yet."
+        return f'Last: "{self.memory.last_raw}" — retype with changes.'
 
     # ----- pending-slot filling (disambiguation chips, message body) -----
 
@@ -93,7 +152,10 @@ class Shell:
     def _simulate(self, spec: str) -> str:
         kind, _, rest = spec.partition(" ")
         source, _, preview = rest.partition(":")
-        self.queue.push(kind, source.strip().title(), preview.strip())
+        name = source.strip().title()
+        self.queue.push(kind, name, preview.strip())
+        if contact := contacts.find(name):
+            self.memory.last_contact = contact  # enables "call them back" (PRD §13)
         return ""  # quiet by design — only the indicator changes (PRD §19.1)
 
     # ----- rendering -----

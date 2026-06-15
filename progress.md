@@ -4,6 +4,27 @@ Reverse-chronological. Every working session gets an entry.
 
 ---
 
+## 2026-06-15 — Session 3: Phase 1 M2 — Conversation depth
+
+- Session memory: `call her back` / `text them` resolve the pronoun (and a
+  trailing "back") to `memory.last_contact`, which now also updates on
+  inbound `/sim` events — implements PRD §13's "Call him back" example.
+- Correction flow (PRD §11): `no, primary` / `no, secondary` re-dispatches
+  the last call or message on the corrected SIM. For calls, the active leg
+  is hung up and redialled; `last_sim` updates so the OS "remembers".
+- Verified message-body capture already worked for a single unambiguous
+  contact (`message lena` → `What should it say?` → send) — added to the
+  demo as its own scenario and marked done.
+- Macros (PRD §19.3): `when I type gm, <a> and <b>` defines a macro after
+  validating each clause parses to a tool call; typing `gm` runs each
+  clause through the normal loop and joins the results.
+- Recall / edit (PRD §19.3): `again` re-runs the last dispatched command
+  (or last-run macro); `edit` prints it back for retyping. `SessionMemory`
+  gained `last_dispatch`, `last_raw`, `macros`.
+- Extended `shell/demo.txt` end-to-end with all of the above; demo still
+  passes. Updated `/help` and `shell/README.md`.
+- M2 fully done — all tasks.md items checked off.
+
 ## 2026-06-11 — Session 2: Tracking system + PRD v1.2 + Phase 1 M1 shell
 
 - Added PRD §19 — Distraction-Free Typing-First Addendum (v1.2): pull-not-push

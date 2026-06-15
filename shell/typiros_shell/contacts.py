@@ -39,6 +39,16 @@ def resolve(words: list[str]) -> tuple[list[Contact], list[str]]:
     return [], words
 
 
+def find(name: str) -> Contact | None:
+    """Look up a contact by full name or first name (for inbound events)."""
+    low = name.lower()
+    for c in CONTACTS:
+        full = c.name.lower()
+        if full == low or full.split()[0] == low:
+            return c
+    return None
+
+
 def _matches(contact: Contact, candidate: str) -> bool:
     full = contact.name.lower()
     if full.startswith(candidate):

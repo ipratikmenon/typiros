@@ -44,6 +44,9 @@ HELP = """typirOS — type what you want done. Examples:
   set brightness to low              turn off wifi
   remind me to call mom at 6pm       set a timer for 10 minutes
   end call                           what did i miss
+  call her back                      no, secondary  (corrects last call/text)
+  when i type gm, X and Y            gm  (runs a macro)
+  again                              edit  (recall / show last command)
 Slash fast paths: /call /msg /missed /help /quit"""
 
 SLASH_ALIASES = {
@@ -54,6 +57,17 @@ SLASH_ALIASES = {
 }
 
 TIME_RE = r"(\d{1,2}(?::\d{2})?\s*(?:am|pm)?|noon|midnight)"
+
+PRONOUN_RE = re.compile(r"\b(him|her|them)\b", re.IGNORECASE)
+TRAILING_BACK_RE = re.compile(r"\s+back$", re.IGNORECASE)
+
+
+def resolve_pronouns(text: str, last_contact: Contact | None) -> str:
+    """"Call him back" / "message her" / "text them" → last contact (PRD §13)."""
+    if last_contact is None or not PRONOUN_RE.search(text):
+        return text
+    text = TRAILING_BACK_RE.sub("", text)
+    return PRONOUN_RE.sub(last_contact.name, text)
 
 
 def parse(raw: str) -> Result:

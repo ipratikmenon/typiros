@@ -27,12 +27,12 @@ Strategy in [plans.md](plans.md) · log in [progress.md](progress.md) · ideas i
 - [x] Quiet notification queue + `/missed` digest (PRD §19.1)
 - [x] End-to-end scripted demo: call + SMS + alarm + setting (success metric) — `shell/demo.txt` passes
 
-### M2 — Conversation depth
-- [ ] Session memory: "call him back" resolves from last inbound/outbound contact
-- [ ] Correction flow: "no, Secondary" re-dispatches last action with new channel
-- [ ] Message-body capture: "message philip" → prompt for body → send
-- [ ] User-defined macros ("gm" → digest) — PRD §19.3
-- [ ] Edit-before-send / recall last command
+### M2 — Conversation depth ✅ (2026-06-15)
+- [x] Session memory: "call him back" resolves from last inbound/outbound contact
+- [x] Correction flow: "no, Secondary" re-dispatches last action with new channel
+- [x] Message-body capture: "message philip" → prompt for body → send
+- [x] User-defined macros ("gm" → digest) — PRD §19.3
+- [x] Edit-before-send / recall last command
 
 ### M3 — Quiet layer
 - [ ] Simulated inbound events (message arrives while user types)

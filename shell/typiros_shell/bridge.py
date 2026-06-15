@@ -30,12 +30,15 @@ class Bridge:
             sim = args.get("sim") or self.memory.last_sim
             self.memory.last_sim = sim
             self.memory.last_contact = args["contact"]
+            self.memory.last_dispatch = ("make_call", {**args, "sim": sim})
             return self.telephony.make_call(args["contact"], sim)
         if tool == "end_call":
             return self.telephony.end_call()
         if tool == "send_message":
             sim = args.get("sim") or self.memory.last_sim
+            self.memory.last_sim = sim
             self.memory.last_contact = args["contact"]
+            self.memory.last_dispatch = ("send_message", {**args, "sim": sim})
             return self.telephony.send_message(
                 args["contact"], args.get("channel", "sms"), sim, args["body"]
             )
