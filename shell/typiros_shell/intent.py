@@ -47,6 +47,8 @@ HELP = """typirOS — type what you want done. Examples:
   call her back                      no, secondary  (corrects last call/text)
   when i type gm, X and Y            gm  (runs a macro)
   again                              edit  (recall / show last command)
+  focus 90m on writing               end focus
+  digest every 30m                   digest off
 Slash fast paths: /call /msg /missed /help /quit"""
 
 SLASH_ALIASES = {
@@ -122,6 +124,20 @@ def parse(raw: str) -> Result:
         return ToolCall("set_setting", {"key": m.group(2), "value": m.group(1)})
     if m := re.fullmatch(r"(wifi|bluetooth|dnd) (on|off)", low):
         return ToolCall("set_setting", {"key": m.group(1), "value": m.group(2)})
+
+    # --- digest cadence (PRD §19.1) ---
+    if re.fullmatch(r"digest off", low):
+        return ToolCall("set_digest_cadence", {"interval": "off"})
+    if m := re.match(r"digest every (.+)", low):
+        return ToolCall("set_digest_cadence", {"interval": m.group(1).strip()})
+
+    # --- focus sessions (PRD §19.2) ---
+    if re.fullmatch(r"end focus|focus done|stop focus", low):
+        return ToolCall("end_focus", {})
+    if m := re.match(r"focus\s+(.+?)\s+on\s+(.+)", low):
+        return ToolCall("start_focus", {"duration": m.group(1).strip(), "label": m.group(2).strip()})
+    if m := re.match(r"focus\s+(.+)", low):
+        return ToolCall("start_focus", {"duration": m.group(1).strip(), "label": "focus"})
 
     return Say(
         "I can't parse that on-grammar yet — in the full OS this escalates "

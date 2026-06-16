@@ -4,6 +4,28 @@ Reverse-chronological. Every working session gets an entry.
 
 ---
 
+## 2026-06-16 — Session 4: Phase 1 M3 — Quiet layer
+
+- `EventSimulator` daemon thread: `/sim auto on [N]` / `/sim auto off` pushes
+  sample inbound events every N seconds in interactive sessions so the `•N`
+  quiet indicator increments without user action (PRD §9, §19.1).
+- Digest cadence (PRD §19.1): `digest every 30m` configures a batch interval;
+  auto-surfaces between REPL turns when elapsed; `digest off` disables. Stored
+  in `SessionMemory.digest_interval`; timer initialised at shell launch so
+  the first fire is never immediate.
+- Focus sessions (PRD §19.2): `focus 90m on writing` suppresses the `•N`
+  indicator, renders `[focus] writing · N left` context strip (first-priority
+  strip, above call and timer), queues events silently. `end focus` (or
+  auto-expiry when the timer runs out, checked at each REPL turn) produces a
+  held-back digest of items that arrived during focus — using the new
+  `QuietQueue.drain_from(idx)` method to extract only focus-period items
+  without losing pre-focus notifications.
+- `QuietQueue` gained `size()` and `drain_from(idx)`. `SessionMemory` gained
+  `focus_session`, `digest_interval`, `last_digest_at`. New `FocusSession`
+  dataclass and `event_sim.py` module.
+- Extended `shell/demo.txt`; all M3 scenarios pass. Updated `/help`,
+  `shell/README.md`.
+
 ## 2026-06-15 — Session 3: Phase 1 M2 — Conversation depth
 
 - Session memory: `call her back` / `text them` resolve the pronoun (and a

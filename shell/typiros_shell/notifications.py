@@ -21,6 +21,14 @@ class QuietQueue:
     def push(self, kind: str, source: str, preview: str) -> None:
         self._items.append(Notification(kind, source, preview))
 
+    def size(self) -> int:
+        return len(self._items)
+
+    def drain_from(self, idx: int) -> list[Notification]:
+        """Remove and return items from index idx onward; earlier items stay."""
+        held, self._items = self._items[idx:], self._items[:idx]
+        return held
+
     def indicator(self) -> str:
         return f"•{len(self._items)}" if self._items else ""
 

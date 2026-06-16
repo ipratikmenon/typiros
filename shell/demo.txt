@@ -23,4 +23,13 @@ when i type gm, what did i miss and set an alarm for 7am
 gm
 edit
 again
+digest every 30m
+/sim sms philip: can you call me back?
+/sim call lena: incoming
+what did i miss
+focus 2m on demo
+/sim sms mom: checking in
+/sim call philip: missed call
+end focus
+digest off
 /quit

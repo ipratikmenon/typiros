@@ -7,10 +7,12 @@ for a TUI without touching intent/bridge/backends.
 
 import re
 import sys
+import time
 
 from . import contacts, intent
 from .bridge import Bridge
 from .contacts import Contact
+from .event_sim import EventSimulator
 from .intent import Clarify, Quit, Say, ToolCall
 from .memory import Pending, SessionMemory
 from .notifications import QuietQueue
@@ -24,6 +26,7 @@ class Shell:
         self.memory = SessionMemory()
         self.queue = QuietQueue()
         self.bridge = Bridge(self.memory, self.queue)
+        self.sim = EventSimulator(self.queue)
         self.echo_input = not sys.stdin.isatty()
 
     # ----- one turn of the single loop (PRD §3) -----
@@ -150,6 +153,19 @@ class Shell:
         return result.question
 
     def _simulate(self, spec: str) -> str:
+        low = spec.strip().lower()
+        if low.startswith("auto"):
+            rest = low[len("auto"):].strip()
+            if rest == "off":
+                self.sim.stop()
+            else:
+                rest = rest.lstrip("on").strip()
+                try:
+                    interval = float(rest) if rest else 30.0
+                except ValueError:
+                    interval = 30.0
+                self.sim.start(interval)
+            return ""
         kind, _, rest = spec.partition(" ")
         source, _, preview = rest.partition(":")
         name = source.strip().title()
@@ -160,8 +176,21 @@ class Shell:
 
     # ----- rendering -----
 
+    def _maybe_auto_digest(self) -> str | None:
+        if self.memory.digest_interval is None:
+            return None
+        if (time.monotonic() - self.memory.last_digest_at) < self.memory.digest_interval:
+            return None
+        self.memory.last_digest_at = time.monotonic()
+        items = self.queue.drain()
+        if not items:
+            return None  # nothing to surface; reset timer silently
+        lines = [f"[auto-digest] {len(items)} waiting:"]
+        lines += [f"  {n.source} ({n.kind}): {n.preview}" for n in items]
+        return "\n".join(lines)
+
     def prompt(self) -> str:
-        indicator = self.queue.indicator()
+        indicator = "" if self.memory.focus_session else self.queue.indicator()
         return f"{indicator} > " if indicator else "> "
 
     def header(self) -> str:
@@ -173,6 +202,14 @@ def run() -> None:
     shell = Shell()
     print("typirOS shell 0.1 — type what you want done. /help for grammar, /quit to exit.")
     while True:
+        # auto-expire focus session when its timer runs out
+        fs = shell.memory.focus_session
+        if fs is not None and time.monotonic() >= fs.end_at:
+            if result := shell.bridge.dispatch("end_focus", {}):
+                print(result)
+        # auto-surface digest when cadence interval has elapsed
+        if digest := shell._maybe_auto_digest():
+            print(f"\n{digest}")
         if header := shell.header():
             print(header)
         try:

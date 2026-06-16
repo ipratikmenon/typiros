@@ -4,10 +4,12 @@ Routes tool calls to backends, normalises results to one-line text, and
 translates every error into natural language before it reaches the chat.
 """
 
+import time
+
 from .backends.device import Device
-from .backends.productivity import Productivity
+from .backends.productivity import Productivity, _parse_duration
 from .backends.telephony import Telephony
-from .memory import SessionMemory
+from .memory import FocusSession, SessionMemory
 from .notifications import QuietQueue
 
 
@@ -52,12 +54,55 @@ class Bridge:
             return self.productivity.set_timer(args["duration"])
         if tool == "show_missed":
             return self.queue.digest()
+        if tool == "set_digest_cadence":
+            interval_str = args["interval"]
+            if interval_str == "off":
+                self.memory.digest_interval = None
+                return "Digest cadence off."
+            secs = _parse_duration(interval_str)
+            if secs is None:
+                raise ValueError(f"couldn't read a duration from {interval_str!r}")
+            self.memory.digest_interval = secs
+            self.memory.last_digest_at = time.monotonic()
+            return f"Digest every {interval_str}."
+        if tool == "start_focus":
+            duration_str = args["duration"]
+            label = args.get("label") or "focus"
+            secs = _parse_duration(duration_str)
+            if secs is None:
+                raise ValueError(f"couldn't read a duration from {duration_str!r}")
+            now = time.monotonic()
+            self.memory.focus_session = FocusSession(
+                label=label,
+                start_at=now,
+                end_at=now + secs,
+                queue_size_at_start=self.queue.size(),
+            )
+            return f"Focus on {label} — {duration_str}. Type 'end focus' to stop."
+        if tool == "end_focus":
+            fs = self.memory.focus_session
+            if fs is None:
+                return "No focus session active."
+            self.memory.focus_session = None
+            held = self.queue.drain_from(fs.queue_size_at_start)
+            if not held:
+                return f"Focus session '{fs.label}' ended — nothing held back."
+            lines = [f"Focus session '{fs.label}' ended — {len(held)} held back:"]
+            lines += [f"  {n.source} ({n.kind}): {n.preview}" for n in held]
+            return "\n".join(lines)
         raise ValueError(f"unknown tool {tool!r}")
 
     def strips(self) -> list[str]:
-        """Persistent context strips (PRD §9) — max 3."""
-        strips = [self.telephony.strip(), self.productivity.strip()]
+        """Persistent context strips (PRD §9) — max 3, focus strip first."""
+        strips = [self._focus_strip(), self.telephony.strip(), self.productivity.strip()]
         return [s for s in strips if s][:3]
+
+    def _focus_strip(self) -> str | None:
+        fs = self.memory.focus_session
+        if fs is None:
+            return None
+        left = max(0, int(fs.end_at - time.monotonic()))
+        return f"[focus] {fs.label} · {left // 60}:{left % 60:02d} left"
 
 
 def _translate(tool: str, exc: Exception) -> str:

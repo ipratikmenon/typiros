@@ -34,10 +34,10 @@ Strategy in [plans.md](plans.md) · log in [progress.md](progress.md) · ideas i
 - [x] User-defined macros ("gm" → digest) — PRD §19.3
 - [x] Edit-before-send / recall last command
 
-### M3 — Quiet layer
-- [ ] Simulated inbound events (message arrives while user types)
-- [ ] Digest mode with configurable cadence
-- [ ] Focus sessions (`focus 90m on writing`) — PRD §19.2
+### M3 — Quiet layer ✅ (2026-06-16)
+- [x] Simulated inbound events (message arrives while user types)
+- [x] Digest mode with configurable cadence
+- [x] Focus sessions (`focus 90m on writing`) — PRD §19.2
 - [ ] Starred-contact true-interrupt exception
 
 ### M4 — Real ground

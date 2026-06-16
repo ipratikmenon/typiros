@@ -9,6 +9,12 @@ Format: `WIF-NNN · status · phase estimate · one-line rationale`
 
 ## Open / Parked
 
+- **WIF-011 · parked · P3** — What if Focus Sessions could auto-reply?
+  PRD §19.2 mentions "auto-replies if configured." A simple implementation:
+  at focus start the user optionally types `focus 1h on writing, auto-reply
+  "I'm in focus mode — back at [end time]"` and any inbound SMS during focus
+  gets that reply dispatched silently via the telephony backend. Needs a
+  starred-contact exception (PRD §19.1: true interrupts still surface).
 - **WIF-010 · parked · P2** — What if "no, X" were a general correction
   primitive, not just SIM? M2 implements `no, secondary`/`no, primary` by
   re-dispatching `last_dispatch` with a swapped `sim`. The same shape could

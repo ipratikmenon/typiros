@@ -42,6 +42,17 @@ What works:
   results
 - **Recall / edit (PRD §19.3):** `again` re-runs the last command; `edit`
   prints it back for retyping with changes
+- **Digest cadence (PRD §19.1):** `digest every 30m` configures auto-batching;
+  the digest surfaces automatically between turns when the interval elapses;
+  `digest off` disables
+- **Focus sessions (PRD §19.2):** `focus 90m on writing` suppresses the quiet
+  indicator and shows `[focus] writing · 89:30 left` strip; `end focus`
+  produces a held-back digest of everything queued during the session; focus
+  also auto-expires in real-time when the timer runs out
+- **Background event simulation:** `/sim auto on [N]` starts a daemon thread
+  that pushes sample inbound events every N seconds (default 30), making the
+  `•N` indicator increment between turns without any user action; `/sim auto off`
+  stops it (interactive sessions only — not used in demo.txt)
 
 ## Architecture
 
