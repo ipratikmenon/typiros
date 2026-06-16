@@ -45,8 +45,8 @@ Strategy in [plans.md](plans.md) · log in [progress.md](progress.md) · ideas i
 - [ ] ModemManager/ofono telephony backend (Linux Mobile target)
 - [ ] Settings backend via dbus
 
-### M5 — TUI shell
-- [ ] Textual-based UI: strips, autocomplete chips, e-ink-friendly theme
+### M5 — TUI shell ✅ (2026-06-16)
+- [x] Textual-based UI: strips, autocomplete chips, e-ink-friendly theme
 
 ## Phase 2+ (placeholders, plan when Phase 1 lands)
 

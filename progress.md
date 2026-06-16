@@ -4,6 +4,26 @@ Reverse-chronological. Every working session gets an entry.
 
 ---
 
+## 2026-06-16 — Session 5: Phase 1 M5 — Textual TUI shell
+
+- New `shell/typiros_shell/tui.py`: `TypirApp(App)` with five stacked widgets —
+  status bar, strips bar, `RichLog` chat history, chips bar, input row (indicator
+  + `Input`). Replaces the line REPL without touching intent/bridge/backends.
+- Grayscale-first, e-ink-friendly CSS: `#111111` background, `#e0e0e0` text,
+  `#444444` borders — no colour highlights anywhere (PRD §19.4).
+- Status bar turns `typirOS 0.1  ·  focus: <label>` during a focus session.
+- Strips bar (focus/call/timer) hidden when empty; auto-refreshed every 0.5s
+  via `set_interval`, so the timer countdown and focus strip stay live.
+- Chips bar shows disambiguation options (`[1] Philip Sharma …`) only while
+  `memory.pending.options` is non-empty; hides after selection.
+- Quiet indicator (`•N`) lives in the input row and is suppressed during focus.
+- Auto-expiry and auto-digest handled in the 0.5s poll (same logic as REPL).
+- `__main__.py` checks for `--tui` flag; existing line REPL is unchanged fallback.
+- Headless Textual test (`app.run_test()`) validates the full
+  call → disambiguation → body-capture → focus session flow.
+- Phase 1 (M1–M5) now complete. M4 (real backends) is a separate track
+  requiring PinePhone/ModemManager hardware.
+
 ## 2026-06-16 — Session 4: Phase 1 M3 — Quiet layer
 
 - `EventSimulator` daemon thread: `/sim auto on [N]` / `/sim auto off` pushes

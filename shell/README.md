@@ -54,6 +54,29 @@ What works:
   `•N` indicator increment between turns without any user action; `/sim auto off`
   stops it (interactive sessions only — not used in demo.txt)
 
+## Running
+
+```bash
+cd shell
+python3 -m typiros_shell           # line REPL (Phase 1 M1–M4 baseline)
+python3 -m typiros_shell --tui     # Textual TUI (Phase 1 M5)
+python3 -m typiros_shell < demo.txt  # scripted end-to-end demo
+```
+
+## TUI (M5)
+
+`python3 -m typiros_shell --tui` opens a Textual-based chat window.
+
+Layout (top → bottom):
+- **Status bar** — title; shows `· focus: <label>` during a focus session
+- **Strips bar** — persistent context strips (`[focus]`, `[call]`, `[timer]`); hidden when none active
+- **Chat log** — scrollable history of every input/response pair
+- **Chips bar** — disambiguation chips (`[1] Philip Sharma  [2] Philip D'Souza`); shown only during an ambiguous match
+- **Input bar** — single-line text input; type anything, press Enter
+
+The UI layer (`tui.py`) is a drop-in replacement for `main.py`; the intent
+parser, bridge, memory, and all backends are unchanged.
+
 ## Architecture
 
 ```

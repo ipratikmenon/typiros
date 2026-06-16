@@ -9,6 +9,11 @@ Format: `WIF-NNN · status · phase estimate · one-line rationale`
 
 ## Open / Parked
 
+- **WIF-012 · parked · P5** — What if the TUI had a light/e-ink theme toggle?
+  The current `tui.py` CSS is dark-terminal-first. A `--light` flag (or a `/theme
+  light` command) could swap the palette to `#ffffff`/`#000000` for real e-ink
+  displays (PineNote, Onyx BOOX). Textual's `dark` reactive plus a CSS variable
+  swap would make this one-liner once the theme tokens are factored out.
 - **WIF-011 · parked · P3** — What if Focus Sessions could auto-reply?
   PRD §19.2 mentions "auto-replies if configured." A simple implementation:
   at focus start the user optionally types `focus 1h on writing, auto-reply
