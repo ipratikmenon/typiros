@@ -4,6 +4,30 @@ Reverse-chronological. Every working session gets an entry.
 
 ---
 
+## 2026-06-17 — Session 6: Phase 2 planning
+
+- Phase 1 (M1–M5) confirmed complete; user agreed to begin scoping Phase 2
+  ("Android Container + Core Agents", PRD §16) rather than continue tweaking
+  Phase 1. Asked the user whether to mock everything, wire a real Tier 2 API,
+  or just plan first — chose **just plan, don't build yet**.
+- Wrote a detailed Phase 2 plan in `plans.md`, replacing the old placeholder
+  section: stack-decision table (Android container, WhatsApp channel
+  routing, Media agent, Tier 2 stub, User memory layer — all mocked behind
+  real interfaces, mirroring the Phase 1 mock-backend pattern), an
+  architecture-additions sketch (`tier2.py`, `user_memory.py`,
+  `backends/android.py`, `backends/media.py`), four new milestones (M6–M9),
+  and an explicit out-of-scope list (real Waydroid/Anbox, real WhatsApp
+  account, real Tier 2 API calls, ROM packaging/hardware — all blocked by
+  the sandbox having no Android runtime, no WhatsApp credentials, and no
+  wired model API key).
+- Mirrored the new milestones into `tasks.md` under a "Phase 2 — Android
+  Container + Core Agents" section (M6 Android container, M7 Media agent,
+  M8 Tier 2 stub, M9 User memory layer), each broken into concrete unchecked
+  work items.
+- No code changes this session — planning only, per user's explicit choice.
+  Next session should start M6 (mock `AndroidContainer` backend + WhatsApp
+  channel routing) once the user confirms the plan.
+
 ## 2026-06-16 — Session 5: Phase 1 M5 — Textual TUI shell
 
 - New `shell/typiros_shell/tui.py`: `TypirApp(App)` with five stacked widgets —

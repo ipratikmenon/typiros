@@ -9,6 +9,13 @@ Format: `WIF-NNN · status · phase estimate · one-line rationale`
 
 ## Open / Parked
 
+- **WIF-013 · parked · P2** — What if the Tier 2 stub (Phase 2 M8) doubled
+  as a grammar-gap logger? Every off-grammar input that falls through to
+  `tier2.py` is, by definition, a Tier 1 miss. Logging those misses (text +
+  timestamp, no PII beyond what's already typed) would build a real dataset
+  for prioritizing future grammar coverage — turns the "escape hatch" into
+  a feedback loop instead of a dead end. Needs a decision on whether logs
+  live in the new sqlite User-memory DB (M9) or a separate flat file.
 - **WIF-012 · parked · P5** — What if the TUI had a light/e-ink theme toggle?
   The current `tui.py` CSS is dark-terminal-first. A `--light` flag (or a `/theme
   light` command) could swap the palette to `#ffffff`/`#000000` for real e-ink

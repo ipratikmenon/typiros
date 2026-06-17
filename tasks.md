@@ -48,8 +48,28 @@ Strategy in [plans.md](plans.md) · log in [progress.md](progress.md) · ideas i
 ### M5 — TUI shell ✅ (2026-06-16)
 - [x] Textual-based UI: strips, autocomplete chips, e-ink-friendly theme
 
-## Phase 2+ (placeholders, plan when Phase 1 lands)
+## Phase 2 — Android Container + Core Agents
 
-- [ ] Android compatibility container spike
-- [ ] Tier 2 escalation via `ant` (agents/*.yaml already defined)
-- [ ] Memory layers: Session + User (encrypted local DB)
+Detailed scope in [plans.md](plans.md#phase-2-plan--android-container--core-agents).
+Sandbox has no real Android runtime, WhatsApp account, or Tier 2 credentials —
+all Phase 2 backends are mocks behind real interfaces, same pattern as Phase 1.
+
+### M6 — Android container (mock)
+- [ ] `backends/android.py`: `AndroidContainer` mock (`send_whatsapp`, `is_installed`)
+- [ ] WhatsApp as a channel alongside primary/secondary SIM in `send_message`
+- [ ] `message X via whatsapp` grammar; `no, whatsapp` correction
+
+### M7 — Media agent (mock)
+- [ ] `backends/media.py`: `Media` mock (`play`, `pause`, `now_playing`)
+- [ ] `play <track>` / `pause` / `what's playing` grammar
+- [ ] Now-playing context strip (within max-3 strip budget)
+
+### M8 — Tier 2 stub + two-model routing
+- [ ] `tier2.py`: off-grammar input routes here instead of failing in language
+- [ ] Canned/echo response tagged `[tier2-stub]`
+- [ ] Routing reads `agents/*.yaml` manifests (no live API call)
+
+### M9 — User memory layer
+- [ ] `user_memory.py`: sqlite-backed contacts/preferences/macros
+- [ ] Seeds from existing in-memory `Contacts`/macros on first run
+- [ ] Session memory (RAM, per-run) stays unchanged

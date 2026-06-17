@@ -70,11 +70,62 @@ shell/typiros_shell/
 - **M5 — TUI shell:** persistent strips, autocomplete chips above input,
   e-ink-friendly rendering.
 
-## Phase 2+ (per PRD §16, not yet planned in detail)
+## Phase 2 Plan — Android Container + Core Agents
 
-Android container, Tier 2 via `ant`/Managed Agents (`agents/*.yaml` already
-scaffolded), media agent, memory layers, keyboard system, ROM packaging.
-Detailed plans to be written when Phase 1 M1–M3 are done.
+**Goal (PRD §16):** send a WhatsApp message without the user ever seeing the
+WhatsApp UI — the success metric is the container being functionally
+invisible, reachable through the same chat-window grammar as everything else.
+
+### Sandbox constraint
+
+This dev environment has no AOSP/Waydroid runtime, no real WhatsApp
+account/API, and no wired Tier 2 model credentials. Per the Phase 1 working
+agreement ("mock backends behind the Bridge interface, same shape real
+backends will implement"), Phase 2 continues that pattern one layer up:
+container and Tier 2 are mocked behind real interfaces, so M4-style swap-in
+later is a backend replacement, not a rewrite.
+
+| Decision | Choice | Rationale |
+|---|---|---|
+| Android container | Mock `AndroidContainer` backend exposing `send_whatsapp(contact, body)`, `is_installed(app)` | Mirrors `telephony.py`'s mock-now/real-later pattern; real backend would be a Waydroid/Anbox bridge |
+| WhatsApp routing | Bridge Layer treats `whatsapp` as a channel alongside `primary`/`secondary` SIM in `send_message` | Reuses existing channel-selection + correction-flow (`no, whatsapp`) machinery from M2, no new grammar shape |
+| Media agent | Mock `Media` backend: `play(track)`, `pause()`, `now_playing()` — printed strip, no real audio | Same mock-strip pattern as `productivity.py` timers |
+| Tier 2 escalation | Stub `Tier2` module: routes off-grammar input through the same `agents/*.yaml` manifests, returns a canned/echo response tagged `[tier2-stub]` | Proves the two-model routing shape without requiring API credentials in this sandbox; swappable for a real `ant` call |
+| Memory: User layer | SQLite file (`shell/typiros_shell/user_memory.db`, stdlib `sqlite3`) for contacts/preferences/macros that persist across runs | Session memory is already RAM-only; User layer per PRD §13 needs durability — sqlite needs zero new deps |
+
+### Architecture additions (shell/)
+
+```
+shell/typiros_shell/
+├── tier2.py             # Stub Tier 2 router: off-grammar input → canned/echo response
+├── user_memory.py        # SQLite-backed User memory layer (contacts, prefs, macros)
+└── backends/
+    ├── android.py        # AndroidContainer mock: send_whatsapp, is_installed
+    └── media.py           # Media mock: play, pause, now_playing
+```
+
+### Milestones
+
+- **M6 — Android container (mock):** `AndroidContainer` backend; `message X
+  via whatsapp` / `message X` (when only WhatsApp is reachable) grammar;
+  WhatsApp joins the channel set alongside primary/secondary SIM, including
+  `no, whatsapp` correction.
+- **M7 — Media agent (mock):** `play <track>`, `pause`, `what's playing`
+  grammar; now-playing context strip (max-3 strip budget, same as call/timer).
+- **M8 — Tier 2 stub + two-model routing:** off-grammar input that fails Tier
+  1 routes to `tier2.py` instead of failing in language; canned/echo response
+  clearly tagged as a stub; manifest-driven routing reads `agents/*.yaml` to
+  prove the wiring without a live API call.
+- **M9 — User memory layer:** sqlite-backed contacts/preferences/macros that
+  persist across process restarts; session memory unchanged (RAM, per-run);
+  migration path: existing in-memory `Contacts`/macros seed the DB on first
+  run.
+
+### Explicitly out of scope for Phase 2 (sandbox)
+
+- Real Waydroid/Anbox container, real WhatsApp account/session
+- Real Tier 2 model API calls (no credentials in this environment)
+- ROM packaging, physical keyboard input, hardware strips (Phase 5)
 
 ---
 
