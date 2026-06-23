@@ -133,6 +133,88 @@ shell/typiros_shell/
 
 ---
 
+## Phase 3 Plan — Full Agent Coverage + Keyboard System
+
+**Goal (PRD §16):** all 8 System Agents operational, all 4 keyboard modes
+implemented (including Adaptive's sensor-driven switching), an Episodic
+memory layer, full-screen overlays, and biometric gating for sensitive
+actions — success metric is "all daily smartphone tasks completable through
+the chat window."
+
+### Sandbox constraint
+
+This dev environment has no GPS/maps API, no real filesystem container, no
+banking/payments API, no fingerprint/face sensor, and no accelerometer or
+ambient-mic hardware. Phase 3 continues the Phase 1/2 pattern exactly: every
+new agent and sensor is a mock behind the real interface PRD §5/§14/§15
+describe, so a later hardware swap-in is a backend replacement, not a
+rewrite. The one exception is full-screen overlays — Textual is a real
+terminal UI framework already in the stack (M5), so the overlay *mechanism*
+(push/dismiss, single gesture back to chat) can be genuinely built; only the
+*content* (maps tiles, photos, video frames) is placeholder.
+
+### Stack decision
+
+| Decision | Choice | Rationale |
+|---|---|---|
+| Navigation agent | Mock `Navigation` backend: `navigate(destination)`, `eta()`, `current_route()` — printed strip, no real routing | Same printed-strip mock pattern as `media.py`; real backend would be a maps API or container app |
+| Information agent | Promote a small canned subset (`weather in <city>`, simple fact lookups) out of the Tier 2 stub into a real Tier 1 grammar + mock `Information` backend; everything else still escalates to `tier2.py` | Demonstrates an agent graduating from "stub-routed" to "natively handled" — the exact lifecycle PRD §18 describes for Tier 1 grammar growth |
+| Files agent | Mock `Files` backend: `find_file(query)`, `recent_files()` over a small in-process mock index | No real filesystem container available; same shape a real on-device index would expose |
+| Finance agent | Mock `Finance` backend: `balance()`, `send_payment(contact, amount)` | Container-backed per PRD §12; first agent that needs the Biometric Gate |
+| Biometric gate | Mock `biometric.py`: typed-passphrase challenge stands in for a fingerprint/face prompt; one unlock per session per domain (PRD §15) | No biometric hardware in sandbox; gate sits in the Bridge Layer ahead of dispatch, same enforcement point as the M6 allowlist check |
+| Keyboard modes | `keyboard.py`: session-level `KeyboardMode` enum — Compact (abbreviation expansion reusing `tier2.py`'s keyword-overlap scorer), Standard (current default), Voice First (`/voice <text>` text-proxy for a transcribed utterance, no mic), Adaptive (auto-switches from mocked sensor signals) | No physical keyboard hardware or mic in this terminal prototype — modes become input-handling *behaviors*, not on-screen layouts, until a real touchscreen/keyboard shell exists |
+| Adaptive sensor signals | `/sim sensor <signal> on/off` (e.g. `driving`, `call-active`) flips `KeyboardMode` per PRD §14's context table | No accelerometer/ambient-mic hardware; mirrors the existing `/sim` event-injection pattern from M3 |
+| Episodic memory | `episodic_memory.py`: separate sqlite file, rolling 90-day window, one summarized row per dispatched action | Same plain-sqlite-now/encrypt-later caveat already flagged in `user_memory.py` (M9) — encryption stays a Phase 4 item |
+| Full-screen overlays | `overlays.py`: Textual `Screen` subclasses (Media/Maps/Photos placeholders) pushed via `app.push_screen()`, dismissed by a single key (Esc) back to chat | TUI (M5) already runs Textual — overlay push/dismiss mechanics are real; only the rendered content is a placeholder |
+
+### Architecture additions (shell/)
+
+```
+shell/typiros_shell/
+├── keyboard.py          # KeyboardMode enum, mode switching, Adaptive sensor rules
+├── biometric.py         # Mock biometric challenge gate (§15), one unlock/session/domain
+├── episodic_memory.py   # sqlite-backed rolling 90-day episodic summaries
+├── overlays.py          # Textual Screen subclasses: Media/Maps/Photos placeholders (TUI only)
+└── backends/
+    ├── navigation.py    # Navigation mock: navigate, eta, current_route
+    ├── information.py   # Information mock: canned weather/fact lookups (Tier 1 subset)
+    ├── files.py         # Files mock: find_file, recent_files over a mock index
+    └── finance.py       # Finance mock: balance, send_payment — gated by biometric.py
+```
+
+### Milestones
+
+- **M10 — Navigation agent (mock):** `navigate <destination>` / `eta` /
+  `where am I going` grammar; `[nav]` context strip joins the max-3 budget.
+- **M11 — Information agent (mock) + Tier 1 graduation:** `weather in
+  <city>` and a small fact-lookup set move from the Tier 2 stub into real
+  Tier 1 grammar backed by a mock `Information` backend; everything else
+  still escalates to `tier2.py`.
+- **M12 — Files agent (mock):** `find file <query>` / `recent files`
+  grammar over a small mock index.
+- **M13 — Finance agent (mock) + Biometric gate:** `balance` / `send <amt>
+  to <contact>` grammar; first wiring of `biometric.py`'s mock challenge
+  ahead of dispatch, one unlock per session per domain (PRD §15).
+- **M14 — Keyboard modes:** `KeyboardMode` enum (Compact/Standard/Voice
+  First/Adaptive); `keyboard mode <name>` to switch manually; Compact's
+  abbreviation expansion; `/voice <text>` proxy; `/sim sensor <signal>
+  on/off` drives Adaptive's automatic switching per PRD §14.
+- **M15 — Episodic memory + full-screen overlays:** `episodic_memory.py`
+  rolling 90-day summarized log; `overlays.py` Textual screens for
+  Media/Maps/Photos, single-gesture dismiss back to chat (TUI only — no
+  overlay support in the line REPL).
+
+### Explicitly out of scope for Phase 3 (sandbox)
+
+- Real GPS/maps API, real routing/traffic data
+- Real banking/payments API, PCI compliance, real money movement
+- Real fingerprint/face biometric hardware
+- Real accelerometer/ambient-mic sensors
+- Real filesystem container / on-device file index
+- SQLCipher encryption for User or Episodic memory (Phase 4 hardening item)
+
+---
+
 ## Risks / Watch Items
 
 - **Grammar coverage ceiling:** deterministic parsing will miss phrasings; the

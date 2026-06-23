@@ -9,6 +9,15 @@ Format: `WIF-NNN · status · phase estimate · one-line rationale`
 
 ## Open / Parked
 
+- **WIF-015 · parked · P3** — What if Compact keyboard mode (Phase 3 M14)
+  reused `tier2.py`'s keyword-overlap scorer for abbreviation expansion
+  instead of a separate lookup table? The scorer already maps free text to
+  the closest matching intent by word overlap; Compact mode needs the same
+  shape in reverse — map a short abbreviation to the most likely full
+  phrase/tool call. Reusing one scorer for both keeps Tier 2 routing and
+  Compact-mode prediction from drifting into two different "closest match"
+  implementations. Needs a decision on whether the scorer moves to a shared
+  module or `keyboard.py` imports `tier2._load_manifests()` directly.
 - **WIF-013 · parked · P2** — What if the Tier 2 stub (Phase 2 M8) doubled
   as a grammar-gap logger? Every off-grammar input that falls through to
   `tier2.py` is, by definition, a Tier 1 miss. Logging those misses (text +

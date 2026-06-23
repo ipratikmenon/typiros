@@ -4,6 +4,47 @@ Reverse-chronological. Every working session gets an entry.
 
 ---
 
+## 2026-06-23 — Session 10: Phase 3 planning
+
+- User confirmed Phase 2 (M6–M9) complete and asked to plan Phase 3 ("Full
+  Agent Coverage + Keyboard System", PRD §16) — planning only, mirroring how
+  Phase 2 was scoped before any code was written.
+- Re-read PRD §8 (Full-Screen Overlays), §12 (System Agents table), §14
+  (Keyboard System / Four Modes / Adaptive's sensor-signal table), §15
+  (Privacy & Security — SQLCipher, Biometric Gate, Container Isolation),
+  §16 (Phase 3 bullet list + success metric) to scope concretely.
+- Wrote **Phase 3 Plan** into `plans.md`: sandbox-constraint paragraph (no
+  GPS/maps API, no real filesystem container, no banking API, no biometric
+  or motion/ambient-mic hardware — all mocked behind real interfaces, same
+  pattern as Phase 1/2, with one exception: Textual's overlay push/dismiss
+  mechanism is real since the TUI already exists, only overlay *content* is
+  placeholder), a stack-decision table, an architecture-additions sketch
+  (`keyboard.py`, `biometric.py`, `episodic_memory.py`, `overlays.py`,
+  `backends/navigation.py`, `backends/information.py`, `backends/files.py`,
+  `backends/finance.py`), six new milestones (M10–M15), and an explicit
+  out-of-scope list.
+- Milestones: M10 Navigation agent, M11 Information agent (graduates a
+  weather/fact subset out of the Tier 2 stub into real Tier 1 grammar — the
+  stub-to-native lifecycle PRD §18 describes), M12 Files agent, M13 Finance
+  agent + Biometric gate (first sensitive-action gate in the codebase,
+  enforced in the Bridge Layer like the M6 allowlist check), M14 Keyboard
+  modes (Compact/Standard/Voice First/Adaptive — modeled as input-handling
+  *behaviors* rather than on-screen layouts, since this is a terminal
+  prototype with no touchscreen or mic; Adaptive driven by a new `/sim
+  sensor <signal> on/off` mock, same shape as the existing `/sim` event
+  injection from M3), M15 Episodic memory (sqlite, same plain-now/
+  encrypt-later caveat as M9's User memory) + full-screen overlays (Textual
+  `Screen` push/dismiss, TUI-only).
+- Mirrored the six milestones into `tasks.md` under a new "Phase 3 — Full
+  Agent Coverage + Keyboard System" section, all unchecked.
+- Logged **WIF-015** (parked, P3): reuse `tier2.py`'s keyword-overlap
+  scorer for Compact-mode abbreviation expansion (M14) instead of building
+  a second "closest match" implementation — needs a decision on whether the
+  scorer moves to a shared module before M14 starts.
+- No code changes this session — planning only, per the user's request and
+  the established Phase 2 precedent (plan first, build after a separate
+  confirmation).
+
 ## 2026-06-23 — Session 9: Phase 2 M8 + M9 — Tier 2 stub, User memory layer
 
 User asked to plan and complete all remaining Phase 2 sprints in one pass.

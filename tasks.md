@@ -79,3 +79,43 @@ all Phase 2 backends are mocks behind real interfaces, same pattern as Phase 1.
 - [x] Scripted/piped runs (demo.txt, tests) use an in-memory DB so they stay
       deterministic; only interactive runs persist to disk
 - [x] Session memory (RAM, per-run) stays unchanged
+
+## Phase 3 — Full Agent Coverage + Keyboard System
+
+Detailed scope in [plans.md](plans.md#phase-3-plan--full-agent-coverage--keyboard-system).
+Sandbox has no GPS/maps API, no real filesystem container, no banking API,
+no biometric or motion/ambient-mic hardware — all Phase 3 backends/sensors
+are mocks behind real interfaces, same pattern as Phase 1/2. Full-screen
+overlays are the one exception: the Textual push/dismiss mechanism is real,
+only the rendered content is placeholder.
+
+### M10 — Navigation agent (mock)
+- [ ] `backends/navigation.py`: `Navigation` mock (`navigate`, `eta`, `current_route`)
+- [ ] `navigate <destination>` / `eta` / `where am I going` grammar
+- [ ] `[nav]` context strip (max-3 strip budget)
+
+### M11 — Information agent (mock) + Tier 1 graduation
+- [ ] `backends/information.py`: canned weather/fact lookups
+- [ ] `weather in <city>` and a small fact set move from `tier2.py` stub into real Tier 1 grammar
+- [ ] Everything else still escalates to `tier2.py` unchanged
+
+### M12 — Files agent (mock)
+- [ ] `backends/files.py`: `find_file(query)`, `recent_files()` over a mock index
+- [ ] `find file <query>` / `recent files` grammar
+
+### M13 — Finance agent (mock) + Biometric gate
+- [ ] `backends/finance.py`: `balance()`, `send_payment(contact, amount)`
+- [ ] `biometric.py`: mock passphrase challenge, one unlock per session per domain (PRD §15)
+- [ ] `balance` / `send <amt> to <contact>` grammar; payment gated by the challenge before dispatch
+
+### M14 — Keyboard modes
+- [ ] `keyboard.py`: `KeyboardMode` enum (Compact/Standard/Voice First/Adaptive)
+- [ ] `keyboard mode <name>` manual switch grammar
+- [ ] Compact: abbreviation expansion reusing `tier2.py`'s keyword-overlap scorer
+- [ ] Voice First: `/voice <text>` transcription proxy (no mic)
+- [ ] Adaptive: `/sim sensor <signal> on/off` drives automatic mode switching per PRD §14's context table
+
+### M15 — Episodic memory + full-screen overlays
+- [ ] `episodic_memory.py`: sqlite-backed rolling 90-day summarized log of dispatched actions
+- [ ] `overlays.py`: Textual `Screen` subclasses for Media/Maps/Photos placeholders
+- [ ] Single-gesture (Esc) dismiss back to chat; TUI only, line REPL unaffected
