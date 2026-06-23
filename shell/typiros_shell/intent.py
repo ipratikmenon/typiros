@@ -55,8 +55,10 @@ HELP = """typirOS — type what you want done. Examples:
   message lena via whatsapp          no, whatsapp  (switches channel)
   enable app instagram               (allowlists a detected container app)
   play some jazz                     pause  /  what's playing
-  when i type gm, X and Y            gm  (runs a macro)
+  navigate to the airport            eta  /  where am i going
+  stop navigating                    when i type gm, X and Y
   again                              edit  (recall / show last command)
+  gm                                 (runs a macro)
   focus 90m on writing               end focus
   digest every 30m                   digest off
 Off-grammar input escalates to Tier 2 (stubbed — no live model call yet).
@@ -153,6 +155,16 @@ def parse(raw: str) -> Result:
         return ToolCall("now_playing", {})
     if m := re.match(r"play\s+(.+)", low):
         return ToolCall("play_track", {"track": m.group(1).strip()})
+
+    # --- navigation agent ---
+    if re.fullmatch(r"(?:stop|end) navigat(?:ion|ing)", low):
+        return ToolCall("stop_navigation", {})
+    if re.fullmatch(r"(?:eta\??|how (?:far|long)(?: away)?\??)", low):
+        return ToolCall("nav_eta", {})
+    if re.fullmatch(r"where am i going\??", low):
+        return ToolCall("current_route", {})
+    if m := re.match(r"navigate(?: to)?\s+(.+)", low):
+        return ToolCall("navigate", {"destination": m.group(1).strip()})
 
     # --- focus sessions (PRD §19.2) ---
     if re.fullmatch(r"end focus|focus done|stop focus", low):

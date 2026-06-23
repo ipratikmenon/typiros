@@ -89,10 +89,10 @@ are mocks behind real interfaces, same pattern as Phase 1/2. Full-screen
 overlays are the one exception: the Textual push/dismiss mechanism is real,
 only the rendered content is placeholder.
 
-### M10 — Navigation agent (mock)
-- [ ] `backends/navigation.py`: `Navigation` mock (`navigate`, `eta`, `current_route`)
-- [ ] `navigate <destination>` / `eta` / `where am I going` grammar
-- [ ] `[nav]` context strip (max-3 strip budget)
+### M10 — Navigation agent (mock) ✅ (2026-06-23)
+- [x] `backends/navigation.py`: `Navigation` mock (`navigate`, `eta`, `current_route`)
+- [x] `navigate <destination>` / `eta` / `where am I going` grammar
+- [x] `[nav]` context strip (max-3 strip budget)
 
 ### M11 — Information agent (mock) + Tier 1 graduation
 - [ ] `backends/information.py`: canned weather/fact lookups

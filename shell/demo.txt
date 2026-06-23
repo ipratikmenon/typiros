@@ -42,4 +42,8 @@ what did i miss
 pause
 what's the weather in paris
 send an email to mom
+navigate to the airport
+eta
+where am i going
+stop navigating
 /quit

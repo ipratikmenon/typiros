@@ -75,6 +75,10 @@ What works:
   once with `no, secondary` and every future `call lena` in a later session
   defaults to Secondary. Piped/scripted runs (`demo.txt`, tests) use an
   in-memory DB instead, so the demo stays deterministic across repeated runs
+- **Navigation agent (mock, Phase 3 M10):** `navigate to the airport` /
+  `eta` / `where am i going` / `stop navigating` drive the mock `Navigation`
+  backend; `[nav] <destination> · ETA <N> min` strip shares the max-3 budget
+  with call/timer/media/focus strips
 
 ## Running
 
@@ -116,7 +120,8 @@ typiros_shell/
     ├── device.py     # set_setting
     ├── productivity.py # alarms, reminders, timers
     ├── android.py    # AndroidContainer mock: installed apps, allowlist gate, send
-    └── media.py      # Media mock: play / pause / now_playing
+    ├── media.py      # Media mock: play / pause / now_playing
+    └── navigation.py # Navigation mock: navigate / eta / current_route / stop
 ```
 
 The UI layer (main.py) is deliberately thin: M5 replaces it with a TUI and
@@ -124,4 +129,4 @@ later a mobile shell without touching intent/bridge/backends. Off-grammar
 input escalates to the Tier 2 stub (M8); a real local LLM Tier 1 fallback
 remains a Phase 1 M4 item for real hardware.
 
-See [plans.md](../plans.md) for milestones M1–M9.
+See [plans.md](../plans.md) for milestones M1–M15.

@@ -9,6 +9,7 @@ import time
 from .backends.android import AndroidContainer
 from .backends.device import Device
 from .backends.media import Media
+from .backends.navigation import Navigation
 from .backends.productivity import Productivity, _parse_duration
 from .backends.telephony import Telephony
 from .memory import FocusSession, SessionMemory
@@ -23,6 +24,7 @@ class Bridge:
         self.productivity = Productivity()
         self.android = AndroidContainer()
         self.media = Media()
+        self.navigation = Navigation()
         self.memory = memory
         self.queue = queue
         self.user_memory = user_memory
@@ -76,6 +78,14 @@ class Bridge:
             return self.media.pause()
         if tool == "now_playing":
             return self.media.now_playing()
+        if tool == "navigate":
+            return self.navigation.navigate(args["destination"])
+        if tool == "nav_eta":
+            return self.navigation.eta()
+        if tool == "current_route":
+            return self.navigation.current_route()
+        if tool == "stop_navigation":
+            return self.navigation.stop()
         if tool == "set_setting":
             return self.device.set_setting(args["key"], args["value"])
         if tool == "set_alarm":
@@ -131,6 +141,7 @@ class Bridge:
             self.telephony.strip(),
             self.productivity.strip(),
             self.media.strip(),
+            self.navigation.strip(),
         ]
         return [s for s in strips if s][:3]
 
@@ -153,5 +164,7 @@ def _translate(tool: str, exc: Exception) -> str:
     if tool == "enable_app":
         return f"Couldn't enable that — {detail}."
     if tool in ("play_track", "pause_media", "now_playing"):
+        return f"Couldn't do that — {detail}."
+    if tool in ("navigate", "nav_eta", "current_route", "stop_navigation"):
         return f"Couldn't do that — {detail}."
     return f"That didn't work — {detail}."

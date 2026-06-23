@@ -4,6 +4,34 @@ Reverse-chronological. Every working session gets an entry.
 
 ---
 
+## 2026-06-23 — Session 11: Phase 3 M10 — Navigation agent (mock)
+
+- New `backends/navigation.py`: `Navigation` mock — `navigate(destination)`
+  sets `destination`/`eta_minutes` (random 5–45 to vary the mock) and
+  returns `Navigating to <destination> — ETA <N> min.`; `eta()` raises if
+  not navigating, else returns the ETA line; `current_route()` returns the
+  same status or `Not navigating anywhere.`; `stop()` clears state and
+  raises if nothing was active; `strip()` renders `[nav] <destination> ·
+  ETA <N> min`.
+- `bridge.py`: `Bridge.__init__` constructs `self.navigation = Navigation()`;
+  new routes `navigate`, `nav_eta`, `current_route`, `stop_navigation`.
+  `strips()` appends `navigation.strip()` last — lowest priority of the four
+  agent strips, same reasoning as media being the first dropped under
+  budget pressure. `_translate` gained a case for the four new tools.
+- `intent.py`: new grammar `navigate (?:to )?(.+)` → `navigate`;
+  `eta`/`how far/long (away)?` → `nav_eta`; `where am i going` →
+  `current_route`; `stop|end navigat(ion|ing)` → `stop_navigation`. `HELP`
+  updated.
+- Extended `shell/demo.txt`: `navigate to the airport` → `eta` → `where am
+  i going` → `stop navigating`, after the existing media/tier2 lines —
+  proves the nav strip shares the max-3 budget with the still-active timer
+  and media strips. Verified end-to-end; demo passes; confirmed no stray
+  `.db` file left behind by the piped run.
+- Updated `shell/README.md` ("What works" + architecture tree, M1–M15
+  reference) and `tasks.md` (M10 checked off).
+- M10 done. Next per `plans.md`: M11 (Information agent + Tier 1
+  graduation of a weather/fact subset out of the Tier 2 stub).
+
 ## 2026-06-23 — Session 10: Phase 3 planning
 
 - User confirmed Phase 2 (M6–M9) complete and asked to plan Phase 3 ("Full
