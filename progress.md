@@ -27,6 +27,18 @@ Reverse-chronological. Every working session gets an entry.
 - No code changes this session — planning only, per user's explicit choice.
   Next session should start M6 (mock `AndroidContainer` backend + WhatsApp
   channel routing) once the user confirms the plan.
+- Follow-up design discussion: explored a universal rendering-layer idea
+  (apps stay installed in the container but every app's content, not just
+  outbound actions, is normalized into typirOS's one plain text style —
+  closer to a screen-reader-to-chat pipeline than the Bridge Layer's current
+  command-only routing) and a LightOS/typirOS merge idea (LightOS reaches
+  distraction-freedom by *subtracting* apps; typirOS reaches it by
+  *abstracting* them — a merge would add a curated default tool/app
+  allowlist gating the Phase 2 `AndroidContainer` backend, with a deliberate
+  `enable app X` opt-in for anything outside it). Logged as **WIF-014**
+  (parked, P2) — needs a PRD-level decision before it changes M6's backend
+  contract. No plans.md/tasks.md changes yet; current Phase 2 plan stands
+  until that decision is made.
 
 ## 2026-06-16 — Session 5: Phase 1 M5 — Textual TUI shell
 
