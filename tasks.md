@@ -62,10 +62,10 @@ all Phase 2 backends are mocks behind real interfaces, same pattern as Phase 1.
 - [x] `message X via whatsapp` / `message X on instagram` grammar; `no, whatsapp` correction
 - [x] Dispatch to a non-allowlisted app fails in language ("X isn't enabled yet — try `enable app X`")
 
-### M7 — Media agent (mock)
-- [ ] `backends/media.py`: `Media` mock (`play`, `pause`, `now_playing`)
-- [ ] `play <track>` / `pause` / `what's playing` grammar
-- [ ] Now-playing context strip (within max-3 strip budget)
+### M7 — Media agent (mock) ✅ (2026-06-23)
+- [x] `backends/media.py`: `Media` mock (`play`, `pause`, `now_playing`)
+- [x] `play <track>` / `pause` / `what's playing` grammar
+- [x] Now-playing context strip (within max-3 strip budget)
 
 ### M8 — Tier 2 stub + two-model routing
 - [ ] `tier2.py`: off-grammar input routes here instead of failing in language

@@ -47,6 +47,7 @@ HELP = """typirOS — type what you want done. Examples:
   call her back                      no, secondary  (corrects last call/text)
   message lena via whatsapp          no, whatsapp  (switches channel)
   enable app instagram               (allowlists a detected container app)
+  play some jazz                     pause  /  what's playing
   when i type gm, X and Y            gm  (runs a macro)
   again                              edit  (recall / show last command)
   focus 90m on writing               end focus
@@ -136,6 +137,14 @@ def parse(raw: str) -> Result:
     # --- app allowlist (PRD §19.9) ---
     if m := re.match(r"enable app\s+(.+)", low):
         return ToolCall("enable_app", {"app": m.group(1).strip()})
+
+    # --- media agent ---
+    if re.fullmatch(r"pause(?: (?:the )?music)?", low):
+        return ToolCall("pause_media", {})
+    if re.fullmatch(r"(?:what'?s playing\??|now playing\??)", low):
+        return ToolCall("now_playing", {})
+    if m := re.match(r"play\s+(.+)", low):
+        return ToolCall("play_track", {"track": m.group(1).strip()})
 
     # --- focus sessions (PRD §19.2) ---
     if re.fullmatch(r"end focus|focus done|stop focus", low):

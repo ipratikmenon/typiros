@@ -60,6 +60,9 @@ What works:
   dispatch silently — anything else detected in the container (Instagram)
   fails in language with a pointer to `enable app <name>`, the deliberate
   opt-in
+- **Media agent (mock):** `play some jazz` / `pause` / `what's playing`
+  drive the mock `Media` backend; `[media] <track> · playing|paused` strip
+  shares the max-3 budget with call/timer/focus strips
 
 ## Running
 
@@ -98,7 +101,8 @@ typiros_shell/
     ├── telephony.py  # make_call / end_call / send_message
     ├── device.py     # set_setting
     ├── productivity.py # alarms, reminders, timers
-    └── android.py    # AndroidContainer mock: installed apps, allowlist gate, send
+    ├── android.py    # AndroidContainer mock: installed apps, allowlist gate, send
+    └── media.py      # Media mock: play / pause / now_playing
 ```
 
 The UI layer (main.py) is deliberately thin: M5 replaces it with a TUI and

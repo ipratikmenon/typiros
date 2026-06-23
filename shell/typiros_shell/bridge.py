@@ -8,6 +8,7 @@ import time
 
 from .backends.android import AndroidContainer
 from .backends.device import Device
+from .backends.media import Media
 from .backends.productivity import Productivity, _parse_duration
 from .backends.telephony import Telephony
 from .memory import FocusSession, SessionMemory
@@ -20,6 +21,7 @@ class Bridge:
         self.device = Device()
         self.productivity = Productivity()
         self.android = AndroidContainer()
+        self.media = Media()
         self.memory = memory
         self.queue = queue
 
@@ -54,6 +56,12 @@ class Bridge:
             return self.telephony.send_message(args["contact"], channel, sim, args["body"])
         if tool == "enable_app":
             return self.android.enable(args["app"])
+        if tool == "play_track":
+            return self.media.play(args["track"])
+        if tool == "pause_media":
+            return self.media.pause()
+        if tool == "now_playing":
+            return self.media.now_playing()
         if tool == "set_setting":
             return self.device.set_setting(args["key"], args["value"])
         if tool == "set_alarm":
@@ -103,8 +111,13 @@ class Bridge:
         raise ValueError(f"unknown tool {tool!r}")
 
     def strips(self) -> list[str]:
-        """Persistent context strips (PRD §9) — max 3, focus strip first."""
-        strips = [self._focus_strip(), self.telephony.strip(), self.productivity.strip()]
+        """Persistent context strips (PRD §9) — max 3, priority order."""
+        strips = [
+            self._focus_strip(),
+            self.telephony.strip(),
+            self.productivity.strip(),
+            self.media.strip(),
+        ]
         return [s for s in strips if s][:3]
 
     def _focus_strip(self) -> str | None:
@@ -125,4 +138,6 @@ def _translate(tool: str, exc: Exception) -> str:
         return f"Couldn't change that — {detail}."
     if tool == "enable_app":
         return f"Couldn't enable that — {detail}."
+    if tool in ("play_track", "pause_media", "now_playing"):
+        return f"Couldn't do that — {detail}."
     return f"That didn't work — {detail}."

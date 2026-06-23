@@ -4,6 +4,31 @@ Reverse-chronological. Every working session gets an entry.
 
 ---
 
+## 2026-06-23 — Session 8: Phase 2 M7 — Media agent (mock)
+
+- New `backends/media.py`: `Media` mock — `play(track)` sets
+  `current_track`/`playing=True`; `pause()` raises if nothing is playing,
+  no-ops with "Already paused" if already paused, else flips `playing` and
+  returns `Paused — <track>.`; `now_playing()` returns `Playing|Paused —
+  <track>.` or `Nothing playing.`; `strip()` renders `[media] <track> ·
+  playing|paused`.
+- `bridge.py`: `Bridge.__init__` constructs `self.media = Media()`; new
+  routes `play_track`, `pause_media`, `now_playing`. `strips()` appends
+  `self.media.strip()` after telephony/productivity, still capped at 3 —
+  media is the first strip dropped under budget pressure since it's the
+  least urgent of the four.  `_translate` gained a case for the three new
+  tools.
+- `intent.py`: new grammar `play (.+)` → `play_track`; `pause(?: music)?` →
+  `pause_media`; `what's playing` / `now playing` → `now_playing`. `HELP`
+  updated.
+- Extended `shell/demo.txt`: `play some jazz` → `what did i miss` (proves
+  the media strip survives an unrelated turn) → `pause`. Verified
+  end-to-end with the timer strip also active (budget-sharing works).
+  Demo passes.
+- Updated `shell/README.md` ("What works" + architecture tree) and
+  `tasks.md` (M7 checked off).
+- M7 done. Next up per `plans.md`: M8 (Tier 2 stub + two-model routing).
+
 ## 2026-06-23 — Session 7: Phase 2 M6 — Android container (mock) + app allowlist
 
 - New `backends/android.py`: `AndroidContainer` mock with `installed`
