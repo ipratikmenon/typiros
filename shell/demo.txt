@@ -51,4 +51,9 @@ what's the capital of mars
 find file budget
 recent files
 find file zzz
+balance
+send 20 to mom
+1234
+balance
+send 5 to mom
 /quit

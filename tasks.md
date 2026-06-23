@@ -103,10 +103,10 @@ only the rendered content is placeholder.
 - [x] `backends/files.py`: `find_file(query)`, `recent_files()` over a mock index
 - [x] `find file <query>` / `recent files` grammar
 
-### M13 — Finance agent (mock) + Biometric gate
-- [ ] `backends/finance.py`: `balance()`, `send_payment(contact, amount)`
-- [ ] `biometric.py`: mock passphrase challenge, one unlock per session per domain (PRD §15)
-- [ ] `balance` / `send <amt> to <contact>` grammar; payment gated by the challenge before dispatch
+### M13 — Finance agent (mock) + Biometric gate ✅ (2026-06-23)
+- [x] `backends/finance.py`: `balance()`, `send_payment(contact, amount)`
+- [x] `biometric.py`: mock passphrase challenge, one unlock per session per domain (PRD §15)
+- [x] `balance` / `send <amt> to <contact>` grammar; payment gated by the challenge before dispatch
 
 ### M14 — Keyboard modes
 - [ ] `keyboard.py`: `KeyboardMode` enum (Compact/Standard/Voice First/Adaptive)

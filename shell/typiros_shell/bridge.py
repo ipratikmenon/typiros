@@ -9,14 +9,20 @@ import time
 from .backends.android import AndroidContainer
 from .backends.device import Device
 from .backends.files import Files
+from .backends.finance import Finance
 from .backends.information import Information
 from .backends.media import Media
 from .backends.navigation import Navigation
 from .backends.productivity import Productivity, _parse_duration
 from .backends.telephony import Telephony
+from .biometric import BiometricGate
 from .memory import FocusSession, SessionMemory
 from .notifications import QuietQueue
 from .user_memory import UserMemory
+
+# Tool → Biometric Gate domain (PRD §15). Checked by the Shell before
+# dispatch so a pending biometric challenge can pause the turn.
+SENSITIVE_TOOLS = {"send_payment": "finance"}
 
 
 class Bridge:
@@ -29,6 +35,8 @@ class Bridge:
         self.navigation = Navigation()
         self.information = Information()
         self.files = Files()
+        self.finance = Finance()
+        self.biometric = BiometricGate()
         self.memory = memory
         self.queue = queue
         self.user_memory = user_memory
@@ -100,6 +108,10 @@ class Bridge:
             return self.files.find_file(args["query"])
         if tool == "recent_files":
             return self.files.recent_files()
+        if tool == "balance":
+            return self.finance.balance()
+        if tool == "send_payment":
+            return self.finance.send_payment(args["contact"], args["amount"])
         if tool == "set_setting":
             return self.device.set_setting(args["key"], args["value"])
         if tool == "set_alarm":
@@ -185,4 +197,6 @@ def _translate(tool: str, exc: Exception) -> str:
         return f"Don't have that yet — {detail}."
     if tool in ("find_file", "recent_files"):
         return f"Couldn't find that — {detail}."
+    if tool in ("balance", "send_payment"):
+        return f"Couldn't do that — {detail}."
     return f"That didn't work — {detail}."

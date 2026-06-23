@@ -10,7 +10,7 @@ import sys
 import time
 
 from . import contacts, intent, tier2
-from .bridge import Bridge
+from .bridge import SENSITIVE_TOOLS, Bridge
 from .contacts import Contact
 from .event_sim import EventSimulator
 from .intent import Clarify, Escalate, Quit, Say, ToolCall
@@ -74,8 +74,17 @@ class Shell:
             return self._render_clarify(result)
         if isinstance(result, ToolCall):
             self.memory.last_raw = stripped
-            return self.bridge.dispatch(result.tool, result.args)
+            return self._dispatch(result.tool, result.args)
         return ""
+
+    # ----- Biometric Gate (PRD §15): sensitive tools pause for a passphrase -----
+
+    def _dispatch(self, tool: str, args: dict) -> str:
+        domain = SENSITIVE_TOOLS.get(tool)
+        if domain and not self.bridge.biometric.is_unlocked(domain):
+            self.memory.pending = Pending(tool, args, "biometric")
+            return "Confirm with your passphrase to continue:"
+        return self.bridge.dispatch(tool, args)
 
     # ----- correction flow (PRD §11: "No, Secondary." OS remembers) -----
 
@@ -141,11 +150,18 @@ class Shell:
                 pending.missing = "body"
                 return "What should it say?"
             self.memory.pending = None
-            return self.bridge.dispatch(pending.tool, pending.args)
+            return self._dispatch(pending.tool, pending.args)
 
         if pending.missing == "body":
             self.memory.pending = None
             pending.args["body"] = text
+            return self._dispatch(pending.tool, pending.args)
+
+        if pending.missing == "biometric":
+            domain = SENSITIVE_TOOLS[pending.tool]
+            if not self.bridge.biometric.confirm(domain, text):
+                return "That didn't match — try again."
+            self.memory.pending = None
             return self.bridge.dispatch(pending.tool, pending.args)
 
         self.memory.pending = None

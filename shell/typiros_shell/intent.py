@@ -58,11 +58,13 @@ HELP = """typirOS — type what you want done. Examples:
   navigate to the airport            eta  /  where am i going
   stop navigating                    weather in paris
   what's the capital of france       find file budget
-  recent files                       when i type gm, X and Y
-  again                              edit  (recall / show last command)
+  recent files                       balance  /  send 20 to mom
+  when i type gm, X and Y            again  /  edit  (recall last command)
   gm                                 (runs a macro)
   focus 90m on writing               end focus
   digest every 30m                   digest off
+Sending money asks for a one-time passphrase (1234) per session — mocks
+the Biometric Gate (PRD §15).
 Off-grammar input escalates to Tier 2 (stubbed — no live model call yet).
 Slash fast paths: /call /msg /missed /help /quit"""
 
@@ -167,6 +169,12 @@ def parse(raw: str) -> Result:
         country = m.group(1).strip().rstrip("?")
         return ToolCall("get_fact", {"query": f"capital of {country}"})
 
+    # --- finance agent (PRD §15: gated by the Biometric Gate) ---
+    if re.fullmatch(r"balance\??", low):
+        return ToolCall("balance", {})
+    if m := re.match(r"send \$?(\d+(?:\.\d{1,2})?)\s+to\s+(.+)", low):
+        return _parse_payment(float(m.group(1)), m.group(2))
+
     # --- files agent ---
     if re.fullmatch(r"recent files\??", low):
         return ToolCall("recent_files", {})
@@ -229,6 +237,20 @@ def _parse_call(rest: str) -> Result:
     if len(matches) > 1:
         return Clarify(
             "Which one?", Pending("make_call", args, "contact", matches), matches
+        )
+    return Say(f"No contact matching “{' '.join(words)}”.")
+
+
+def _parse_payment(amount: float, rest: str) -> Result:
+    words = rest.split()
+    matches, leftover = contacts.resolve(words)
+    args = {"amount": amount}
+    if len(matches) == 1 and not leftover:
+        args["contact"] = matches[0]
+        return ToolCall("send_payment", args)
+    if len(matches) > 1:
+        return Clarify(
+            "Which one?", Pending("send_payment", args, "contact", matches), matches
         )
     return Say(f"No contact matching “{' '.join(words)}”.")
 

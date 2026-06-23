@@ -89,6 +89,13 @@ What works:
 - **Files agent (mock, Phase 3 M12):** `find file budget` / `recent files`
   search a small mock file index; a single match returns one line, multiple
   matches list each, no match fails gracefully in language
+- **Finance agent (mock) + Biometric gate (Phase 3 M13, PRD §15):** `balance`
+  / `send 20 to mom` drive the mock `Finance` backend; the first sensitive
+  action in a session pauses for a typed passphrase (`1234` — a mock
+  fingerprint/face prompt) via `biometric.py`'s `BiometricGate`, gated at
+  the Bridge Layer the same way the M6 allowlist check is; a wrong
+  passphrase re-prompts, a correct one unlocks the `finance` domain for the
+  rest of the session so further payments dispatch silently
 
 ## Running
 
@@ -125,6 +132,7 @@ typiros_shell/
 ├── user_memory.py    # User memory layer: sqlite-backed SIM prefs, allowlist, macros
 ├── notifications.py  # quiet queue + digest
 ├── tier2.py          # Tier 2 stub: off-grammar input → agents/*.yaml-routed canned response
+├── biometric.py      # Mock Biometric Gate: passphrase challenge, one unlock/session/domain
 └── backends/         # mocks with PRD §5 tool-manifest signatures
     ├── telephony.py  # make_call / end_call / send_message
     ├── device.py     # set_setting
@@ -133,7 +141,8 @@ typiros_shell/
     ├── media.py      # Media mock: play / pause / now_playing
     ├── navigation.py # Navigation mock: navigate / eta / current_route / stop
     ├── information.py # Information mock: weather / time / canned facts
-    └── files.py      # Files mock: find_file / recent_files over a mock index
+    ├── files.py      # Files mock: find_file / recent_files over a mock index
+    └── finance.py    # Finance mock: balance / send_payment — gated by biometric.py
 ```
 
 The UI layer (main.py) is deliberately thin: M5 replaces it with a TUI and

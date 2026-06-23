@@ -4,6 +4,54 @@ Reverse-chronological. Every working session gets an entry.
 
 ---
 
+## 2026-06-23 — Session 14: Phase 3 M13 — Finance agent (mock) + Biometric gate
+
+- New `biometric.py`: `BiometricGate` — `unlocked: set[str]` of confirmed
+  domains; `is_unlocked(domain)`; `confirm(domain, passphrase)` checks
+  against a fixed mock passphrase (`1234`, standing in for a fingerprint/
+  face prompt with no biometric hardware in the sandbox) and adds the
+  domain to `unlocked` on success. One unlock per session per domain
+  (PRD §15) — once `finance` is confirmed, later payments don't re-prompt.
+- New `backends/finance.py`: `Finance` mock — `balance()` returns a fixed
+  starting balance; `send_payment(contact, amount)` raises on a non-positive
+  amount or insufficient balance, else debits and returns a confirmation.
+- `bridge.py`: new module-level `SENSITIVE_TOOLS = {"send_payment":
+  "finance"}` map (tool → gate domain), imported by `main.py` so the Shell
+  can pause a turn *before* dispatch — `Bridge.dispatch()` itself doesn't
+  know about pending/turn-taking, so the gate check had to live one layer
+  up, same boundary as the existing message-body-capture flow.
+  `Bridge.__init__` constructs `self.finance = Finance()` and
+  `self.biometric = BiometricGate()`; new routes `balance`, `send_payment`;
+  `_translate` gained a case for both.
+- `main.py`: new `Shell._dispatch(tool, args)` wraps `bridge.dispatch` —
+  if the tool is in `SENSITIVE_TOOLS` and its domain isn't unlocked yet, it
+  sets `memory.pending = Pending(tool, args, "biometric")` and returns
+  `"Confirm with your passphrase to continue:"` instead of dispatching.
+  All three ToolCall-dispatch call sites (`handle()`'s direct dispatch, and
+  both branches of `_fill_pending`'s contact-resolution path) now go
+  through `_dispatch` instead of `bridge.dispatch` directly, so a payment
+  reached via contact disambiguation still gets gated. `_fill_pending`
+  gained a `missing == "biometric"` branch: wrong passphrase returns "That
+  didn't match — try again." and leaves the pending challenge active for a
+  retry; correct passphrase clears pending, unlocks the domain, and
+  dispatches the original tool call.
+- `intent.py`: new grammar `balance\??` → `balance`; `send \$?<amount> to
+  <contact>` → `send_payment` (reuses the same contact-resolution/
+  disambiguation path as `_parse_call`/`_parse_message` via a new
+  `_parse_payment` helper). `HELP` updated with a note about the passphrase.
+- Extended `shell/demo.txt`: `balance` → `send 20 to mom` (triggers the
+  challenge) → `1234` (confirms, dispatches) → `balance` (debited) → `send
+  5 to mom` (now dispatches silently — domain already unlocked) after the
+  M12 files lines. Manually verified the wrong-passphrase retry path and
+  the insufficient-balance failure path outside the demo script (both
+  fail gracefully in language). Demo passes end-to-end; no stray `.db`
+  file.
+- Updated `shell/README.md` ("What works" + architecture tree) and
+  `tasks.md` (M13 checked off).
+- M13 done — first sensitive-action gate in the codebase, enforced at the
+  same Shell/Bridge boundary as the existing disambiguation-chip and
+  message-body-capture flows. Next per `plans.md`: M14 (Keyboard modes).
+
 ## 2026-06-23 — Session 13: Phase 3 M12 — Files agent (mock)
 
 - New `backends/files.py`: `Files` mock over a 5-entry in-process
