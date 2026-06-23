@@ -4,6 +4,30 @@ Reverse-chronological. Every working session gets an entry.
 
 ---
 
+## 2026-06-23 — Session 13: Phase 3 M12 — Files agent (mock)
+
+- New `backends/files.py`: `Files` mock over a 5-entry in-process
+  `MOCK_INDEX` (name + modified date). `find_file(query)` substring-matches
+  case-insensitively against names — a single match returns `Found: <name>
+  — modified <date>.`, multiple matches list each on its own line, no match
+  raises `FileNotFoundError`. `recent_files(n=3)` sorts the index by
+  modified date and lists the top N.
+- `intent.py`: new grammar `recent files\??` → `recent_files`; `find files?
+  (.+)` → `find_file`. `HELP` updated.
+- `bridge.py`: `Bridge.__init__` constructs `self.files = Files()`; new
+  routes `find_file`, `recent_files`. `_translate` gained a case returning
+  `Couldn't find that — <detail>.` for both tools. No context strip — a
+  file lookup is a one-shot result, not a persistent state like
+  call/timer/media/nav.
+- Extended `shell/demo.txt`: `find file budget` (single match) → `recent
+  files` (top-3 listing) → `find file zzz` (graceful no-match) after the
+  M11 information lines. Verified end-to-end; demo passes; no stray `.db`
+  file.
+- Updated `shell/README.md` ("What works" + architecture tree) and
+  `tasks.md` (M12 checked off).
+- M12 done. Next per `plans.md`: M13 (Finance agent mock + Biometric gate
+  — first sensitive-action gate in the codebase).
+
 ## 2026-06-23 — Session 12: Phase 3 M11 — Information agent + Tier 1 graduation
 
 - New `backends/information.py`: `Information` mock — `weather(city)`

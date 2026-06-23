@@ -99,9 +99,9 @@ only the rendered content is placeholder.
 - [x] `weather in <city>` and a small fact set move from `tier2.py` stub into real Tier 1 grammar
 - [x] Everything else still escalates to `tier2.py` unchanged
 
-### M12 — Files agent (mock)
-- [ ] `backends/files.py`: `find_file(query)`, `recent_files()` over a mock index
-- [ ] `find file <query>` / `recent files` grammar
+### M12 — Files agent (mock) ✅ (2026-06-23)
+- [x] `backends/files.py`: `find_file(query)`, `recent_files()` over a mock index
+- [x] `find file <query>` / `recent files` grammar
 
 ### M13 — Finance agent (mock) + Biometric gate
 - [ ] `backends/finance.py`: `balance()`, `send_payment(contact, amount)`

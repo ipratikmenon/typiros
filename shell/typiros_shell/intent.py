@@ -57,7 +57,8 @@ HELP = """typirOS — type what you want done. Examples:
   play some jazz                     pause  /  what's playing
   navigate to the airport            eta  /  where am i going
   stop navigating                    weather in paris
-  what's the capital of france       when i type gm, X and Y
+  what's the capital of france       find file budget
+  recent files                       when i type gm, X and Y
   again                              edit  (recall / show last command)
   gm                                 (runs a macro)
   focus 90m on writing               end focus
@@ -165,6 +166,12 @@ def parse(raw: str) -> Result:
     if m := re.match(r"what(?:'s| is) the capital of\s+(.+)", low):
         country = m.group(1).strip().rstrip("?")
         return ToolCall("get_fact", {"query": f"capital of {country}"})
+
+    # --- files agent ---
+    if re.fullmatch(r"recent files\??", low):
+        return ToolCall("recent_files", {})
+    if m := re.match(r"find files?\s+(.+)", low):
+        return ToolCall("find_file", {"query": m.group(1).strip().rstrip("?")})
 
     # --- navigation agent ---
     if re.fullmatch(r"(?:stop|end) navigat(?:ion|ing)", low):

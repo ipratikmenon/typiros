@@ -86,6 +86,9 @@ What works:
   that subset (`what's the capital of mars`) fail gracefully in language;
   anything else off-grammar (`send an email to mom`) still escalates to
   `tier2.py` unchanged
+- **Files agent (mock, Phase 3 M12):** `find file budget` / `recent files`
+  search a small mock file index; a single match returns one line, multiple
+  matches list each, no match fails gracefully in language
 
 ## Running
 
@@ -129,7 +132,8 @@ typiros_shell/
     ├── android.py    # AndroidContainer mock: installed apps, allowlist gate, send
     ├── media.py      # Media mock: play / pause / now_playing
     ├── navigation.py # Navigation mock: navigate / eta / current_route / stop
-    └── information.py # Information mock: weather / time / canned facts
+    ├── information.py # Information mock: weather / time / canned facts
+    └── files.py      # Files mock: find_file / recent_files over a mock index
 ```
 
 The UI layer (main.py) is deliberately thin: M5 replaces it with a TUI and

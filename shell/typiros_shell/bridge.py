@@ -8,6 +8,7 @@ import time
 
 from .backends.android import AndroidContainer
 from .backends.device import Device
+from .backends.files import Files
 from .backends.information import Information
 from .backends.media import Media
 from .backends.navigation import Navigation
@@ -27,6 +28,7 @@ class Bridge:
         self.media = Media()
         self.navigation = Navigation()
         self.information = Information()
+        self.files = Files()
         self.memory = memory
         self.queue = queue
         self.user_memory = user_memory
@@ -94,6 +96,10 @@ class Bridge:
             return self.information.time()
         if tool == "get_fact":
             return self.information.fact(args["query"])
+        if tool == "find_file":
+            return self.files.find_file(args["query"])
+        if tool == "recent_files":
+            return self.files.recent_files()
         if tool == "set_setting":
             return self.device.set_setting(args["key"], args["value"])
         if tool == "set_alarm":
@@ -177,4 +183,6 @@ def _translate(tool: str, exc: Exception) -> str:
         return f"Couldn't do that — {detail}."
     if tool in ("get_weather", "get_time", "get_fact"):
         return f"Don't have that yet — {detail}."
+    if tool in ("find_file", "recent_files"):
+        return f"Couldn't find that — {detail}."
     return f"That didn't work — {detail}."
