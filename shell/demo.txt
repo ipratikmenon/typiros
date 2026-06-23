@@ -46,4 +46,6 @@ navigate to the airport
 eta
 where am i going
 stop navigating
+what's the capital of france
+what's the capital of mars
 /quit

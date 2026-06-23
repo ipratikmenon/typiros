@@ -79,6 +79,13 @@ What works:
   `eta` / `where am i going` / `stop navigating` drive the mock `Navigation`
   backend; `[nav] <destination> · ETA <N> min` strip shares the max-3 budget
   with call/timer/media/focus strips
+- **Information agent (mock, Phase 3 M11):** `weather in paris` / `what's
+  the time` / `what's the capital of france` now resolve through real Tier 1
+  grammar and the mock `Information` backend instead of escalating —
+  graduated out of the Tier 2 stub as a small canned subset. Queries outside
+  that subset (`what's the capital of mars`) fail gracefully in language;
+  anything else off-grammar (`send an email to mom`) still escalates to
+  `tier2.py` unchanged
 
 ## Running
 
@@ -121,7 +128,8 @@ typiros_shell/
     ├── productivity.py # alarms, reminders, timers
     ├── android.py    # AndroidContainer mock: installed apps, allowlist gate, send
     ├── media.py      # Media mock: play / pause / now_playing
-    └── navigation.py # Navigation mock: navigate / eta / current_route / stop
+    ├── navigation.py # Navigation mock: navigate / eta / current_route / stop
+    └── information.py # Information mock: weather / time / canned facts
 ```
 
 The UI layer (main.py) is deliberately thin: M5 replaces it with a TUI and

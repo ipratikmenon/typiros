@@ -8,6 +8,7 @@ import time
 
 from .backends.android import AndroidContainer
 from .backends.device import Device
+from .backends.information import Information
 from .backends.media import Media
 from .backends.navigation import Navigation
 from .backends.productivity import Productivity, _parse_duration
@@ -25,6 +26,7 @@ class Bridge:
         self.android = AndroidContainer()
         self.media = Media()
         self.navigation = Navigation()
+        self.information = Information()
         self.memory = memory
         self.queue = queue
         self.user_memory = user_memory
@@ -86,6 +88,12 @@ class Bridge:
             return self.navigation.current_route()
         if tool == "stop_navigation":
             return self.navigation.stop()
+        if tool == "get_weather":
+            return self.information.weather(args["city"])
+        if tool == "get_time":
+            return self.information.time()
+        if tool == "get_fact":
+            return self.information.fact(args["query"])
         if tool == "set_setting":
             return self.device.set_setting(args["key"], args["value"])
         if tool == "set_alarm":
@@ -167,4 +175,6 @@ def _translate(tool: str, exc: Exception) -> str:
         return f"Couldn't do that — {detail}."
     if tool in ("navigate", "nav_eta", "current_route", "stop_navigation"):
         return f"Couldn't do that — {detail}."
+    if tool in ("get_weather", "get_time", "get_fact"):
+        return f"Don't have that yet — {detail}."
     return f"That didn't work — {detail}."

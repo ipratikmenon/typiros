@@ -56,7 +56,8 @@ HELP = """typirOS — type what you want done. Examples:
   enable app instagram               (allowlists a detected container app)
   play some jazz                     pause  /  what's playing
   navigate to the airport            eta  /  where am i going
-  stop navigating                    when i type gm, X and Y
+  stop navigating                    weather in paris
+  what's the capital of france       when i type gm, X and Y
   again                              edit  (recall / show last command)
   gm                                 (runs a macro)
   focus 90m on writing               end focus
@@ -155,6 +156,15 @@ def parse(raw: str) -> Result:
         return ToolCall("now_playing", {})
     if m := re.match(r"play\s+(.+)", low):
         return ToolCall("play_track", {"track": m.group(1).strip()})
+
+    # --- information agent (Tier 1 graduation, PRD §18) ---
+    if m := re.match(r"(?:what'?s the )?weather (?:in|for|at)\s+(.+)", low):
+        return ToolCall("get_weather", {"city": m.group(1).strip().rstrip("?")})
+    if re.fullmatch(r"what(?:'s| is) the time\??", low):
+        return ToolCall("get_time", {})
+    if m := re.match(r"what(?:'s| is) the capital of\s+(.+)", low):
+        country = m.group(1).strip().rstrip("?")
+        return ToolCall("get_fact", {"query": f"capital of {country}"})
 
     # --- navigation agent ---
     if re.fullmatch(r"(?:stop|end) navigat(?:ion|ing)", low):

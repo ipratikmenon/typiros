@@ -4,6 +4,38 @@ Reverse-chronological. Every working session gets an entry.
 
 ---
 
+## 2026-06-23 — Session 12: Phase 3 M11 — Information agent + Tier 1 graduation
+
+- New `backends/information.py`: `Information` mock — `weather(city)`
+  returns canned conditions for four cities, falling back to a generic
+  mock reading for anything else; `fact(query)` looks up a small canned
+  dict (`capital of france` → `Paris.`, etc.), raising `ValueError` for
+  anything outside it; `time()` returns the current local time.
+- `intent.py`: new grammar `(?:what's the )?weather (?:in|for|at) (.+)` →
+  `get_weather`; `what's/is the time` → `get_time`; `what's/is the capital
+  of (.+)` → `get_fact`. Deliberately phrased to also match the exact
+  off-grammar phrasing the Tier 2 stub previously caught (`what's the
+  weather in paris`) — proves the stub-to-native graduation PRD §18
+  describes rather than adding a parallel grammar shape.
+- `bridge.py`: `Bridge.__init__` constructs `self.information =
+  Information()`; new routes `get_weather`, `get_time`, `get_fact`.
+  `_translate` gained a case returning `Don't have that yet — <detail>.`
+  for the three new tools, so an unrecognized fact (`capital of mars`)
+  fails gracefully in language instead of crashing — distinct from the
+  Tier 2 escalation path, which still handles anything that doesn't match
+  the new grammar at all (`send an email to mom`).
+- Extended `shell/demo.txt`: the existing `what's the weather in paris`
+  line now resolves natively (previously it printed
+  `[tier2-stub] typiros-information would handle: ...`); added `what's the
+  capital of france` (native hit) and `what's the capital of mars` (native
+  miss, graceful failure) after the M10 navigation lines. Verified
+  end-to-end — `send an email to mom` still demonstrates Tier 2 escalation
+  for anything outside the graduated subset; demo passes; no stray `.db`
+  file.
+- Updated `shell/README.md` ("What works" + architecture tree) and
+  `tasks.md` (M11 checked off).
+- M11 done. Next per `plans.md`: M12 (Files agent mock).
+
 ## 2026-06-23 — Session 11: Phase 3 M10 — Navigation agent (mock)
 
 - New `backends/navigation.py`: `Navigation` mock — `navigate(destination)`

@@ -94,10 +94,10 @@ only the rendered content is placeholder.
 - [x] `navigate <destination>` / `eta` / `where am I going` grammar
 - [x] `[nav]` context strip (max-3 strip budget)
 
-### M11 — Information agent (mock) + Tier 1 graduation
-- [ ] `backends/information.py`: canned weather/fact lookups
-- [ ] `weather in <city>` and a small fact set move from `tier2.py` stub into real Tier 1 grammar
-- [ ] Everything else still escalates to `tier2.py` unchanged
+### M11 — Information agent (mock) + Tier 1 graduation ✅ (2026-06-23)
+- [x] `backends/information.py`: canned weather/fact lookups
+- [x] `weather in <city>` and a small fact set move from `tier2.py` stub into real Tier 1 grammar
+- [x] Everything else still escalates to `tier2.py` unchanged
 
 ### M12 — Files agent (mock)
 - [ ] `backends/files.py`: `find_file(query)`, `recent_files()` over a mock index
