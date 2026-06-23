@@ -45,6 +45,8 @@ HELP = """typirOS — type what you want done. Examples:
   remind me to call mom at 6pm       set a timer for 10 minutes
   end call                           what did i miss
   call her back                      no, secondary  (corrects last call/text)
+  message lena via whatsapp          no, whatsapp  (switches channel)
+  enable app instagram               (allowlists a detected container app)
   when i type gm, X and Y            gm  (runs a macro)
   again                              edit  (recall / show last command)
   focus 90m on writing               end focus
@@ -131,6 +133,10 @@ def parse(raw: str) -> Result:
     if m := re.match(r"digest every (.+)", low):
         return ToolCall("set_digest_cadence", {"interval": m.group(1).strip()})
 
+    # --- app allowlist (PRD §19.9) ---
+    if m := re.match(r"enable app\s+(.+)", low):
+        return ToolCall("enable_app", {"app": m.group(1).strip()})
+
     # --- focus sessions (PRD §19.2) ---
     if re.fullmatch(r"end focus|focus done|stop focus", low):
         return ToolCall("end_focus", {})
@@ -157,6 +163,9 @@ def _split_channel(words: list[str]) -> tuple[list[str], str | None, str | None]
                 sim = qualifier.title()
             else:
                 app = qualifier
+            i += 2
+        elif words[i] == "via" and i + 1 < len(words):
+            app = words[i + 1].rstrip(",")
             i += 2
         elif words[i] == "on" and i + 1 < len(words):
             app = words[i + 1].rstrip(",")

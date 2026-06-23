@@ -6,6 +6,7 @@ translates every error into natural language before it reaches the chat.
 
 import time
 
+from .backends.android import AndroidContainer
 from .backends.device import Device
 from .backends.productivity import Productivity, _parse_duration
 from .backends.telephony import Telephony
@@ -18,6 +19,7 @@ class Bridge:
         self.telephony = Telephony()
         self.device = Device()
         self.productivity = Productivity()
+        self.android = AndroidContainer()
         self.memory = memory
         self.queue = queue
 
@@ -37,13 +39,21 @@ class Bridge:
         if tool == "end_call":
             return self.telephony.end_call()
         if tool == "send_message":
+            channel = args.get("channel", "sms")
+            self.memory.last_contact = args["contact"]
+            if self.android.is_installed(channel):
+                if not self.android.is_allowed(channel):
+                    raise PermissionError(
+                        f"{channel} isn't enabled yet — try `enable app {channel}`"
+                    )
+                self.memory.last_dispatch = ("send_message", {**args, "sim": self.memory.last_sim})
+                return self.android.send(channel, args["contact"], args["body"])
             sim = args.get("sim") or self.memory.last_sim
             self.memory.last_sim = sim
-            self.memory.last_contact = args["contact"]
             self.memory.last_dispatch = ("send_message", {**args, "sim": sim})
-            return self.telephony.send_message(
-                args["contact"], args.get("channel", "sms"), sim, args["body"]
-            )
+            return self.telephony.send_message(args["contact"], channel, sim, args["body"])
+        if tool == "enable_app":
+            return self.android.enable(args["app"])
         if tool == "set_setting":
             return self.device.set_setting(args["key"], args["value"])
         if tool == "set_alarm":
@@ -113,4 +123,6 @@ def _translate(tool: str, exc: Exception) -> str:
         return f"Couldn't send it — {detail}."
     if tool == "set_setting":
         return f"Couldn't change that — {detail}."
+    if tool == "enable_app":
+        return f"Couldn't enable that — {detail}."
     return f"That didn't work — {detail}."

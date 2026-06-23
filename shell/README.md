@@ -53,6 +53,13 @@ What works:
   that pushes sample inbound events every N seconds (default 30), making the
   `•N` indicator increment between turns without any user action; `/sim auto off`
   stops it (interactive sessions only — not used in demo.txt)
+- **Android container + app allowlist (PRD §7, §19.9):** `message X via
+  whatsapp` / `message X on instagram` route through the mock
+  `AndroidContainer` backend instead of telephony; `no, whatsapp` switches
+  the last message's channel. Only allowlisted apps (WhatsApp by default)
+  dispatch silently — anything else detected in the container (Instagram)
+  fails in language with a pointer to `enable app <name>`, the deliberate
+  opt-in
 
 ## Running
 
@@ -90,7 +97,8 @@ typiros_shell/
 └── backends/         # mocks with PRD §5 tool-manifest signatures
     ├── telephony.py  # make_call / end_call / send_message
     ├── device.py     # set_setting
-    └── productivity.py # alarms, reminders, timers
+    ├── productivity.py # alarms, reminders, timers
+    └── android.py    # AndroidContainer mock: installed apps, allowlist gate, send
 ```
 
 The UI layer (main.py) is deliberately thin: M5 replaces it with a TUI and

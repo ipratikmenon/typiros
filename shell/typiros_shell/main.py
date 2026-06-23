@@ -17,7 +17,7 @@ from .intent import Clarify, Quit, Say, ToolCall
 from .memory import Pending, SessionMemory
 from .notifications import QuietQueue
 
-CORRECTION_RE = re.compile(r"no,?\s+(primary|secondary)\.?", re.IGNORECASE)
+CORRECTION_RE = re.compile(r"no,?\s+(primary|secondary|whatsapp)\.?", re.IGNORECASE)
 MACRO_DEF_RE = re.compile(r"when i type (\S+),\s*(.+)", re.IGNORECASE)
 
 
@@ -71,11 +71,16 @@ class Shell:
 
     # ----- correction flow (PRD §11: "No, Secondary." OS remembers) -----
 
-    def _correct(self, sim_word: str) -> str:
+    def _correct(self, value: str) -> str:
         if not self.memory.last_dispatch:
             return "Nothing to correct yet."
         tool, args = self.memory.last_dispatch
-        new_sim = sim_word.title()
+        low = value.lower()
+        if low == "whatsapp":
+            if tool != "send_message":
+                return "Can't switch that to WhatsApp."
+            return self.bridge.dispatch(tool, {**args, "channel": "whatsapp"})
+        new_sim = value.title()
         if tool == "make_call":
             self.bridge.dispatch("end_call", {})  # hang up before redialling
         return self.bridge.dispatch(tool, {**args, "sim": new_sim})

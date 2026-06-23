@@ -32,4 +32,9 @@ focus 2m on demo
 /sim call philip: missed call
 end focus
 digest off
+message mom take it easy
+no, whatsapp
+message philip sharma hey on instagram
+enable app instagram
+message philip sharma hey on instagram
 /quit

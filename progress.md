@@ -4,6 +4,40 @@ Reverse-chronological. Every working session gets an entry.
 
 ---
 
+## 2026-06-23 — Session 7: Phase 2 M6 — Android container (mock) + app allowlist
+
+- New `backends/android.py`: `AndroidContainer` mock with `installed`
+  (`whatsapp`, `instagram`) and `allowlist` (`whatsapp` by default) sets.
+  `is_installed`/`is_allowed` check membership; `enable(app)` raises if not
+  installed, no-ops if already enabled, otherwise adds to the allowlist and
+  returns the PRD §19.9 confirmation line (`Enabled: <app>. It will route
+  silently from now on.`); generic `send(app, contact, body)` returns
+  `Sent to <contact> — <DisplayName>.`
+- `bridge.py`: `send_message` now checks `self.android.is_installed(channel)`
+  before falling back to telephony/SMS — if the channel is a detected
+  container app, it must also be allowlisted or the call raises
+  `PermissionError` translated to `Couldn't send it — <app> isn't enabled
+  yet — try \`enable app <app>\`.`. New `enable_app` route calls
+  `android.enable`. `_translate` gained an `enable_app` case.
+  `Bridge.__init__` now constructs `self.android = AndroidContainer()`.
+- `intent.py`: `_split_channel` gained a `via` keyword alongside
+  `through`/`on` (`message lena via whatsapp`); new `enable app (.+)`
+  grammar → `ToolCall("enable_app", {"app": ...})`. `HELP` updated.
+- `main.py`: `CORRECTION_RE` extended to accept `whatsapp` alongside
+  `primary`/`secondary`; `_correct()` branches on the corrected value —
+  `whatsapp` swaps the last `send_message`'s `channel` slot instead of
+  `sim` (only valid for `send_message`; calls reject the correction in
+  language).
+- Extended `shell/demo.txt`: `message mom take it easy` → `no, whatsapp`
+  (channel-correction, succeeds since WhatsApp is allowlisted by default)
+  → `message philip sharma hey on instagram` (fails, not enabled) →
+  `enable app instagram` → same message (now succeeds). Verified end-to-end,
+  demo passes.
+- Updated `shell/README.md` ("What works" + architecture tree) and
+  `tasks.md` (M6 checked off). PRD §19.9 / WIF-014 already recorded last
+  session — no further doc changes needed there.
+- M6 done. Next up: M7 (mock Media agent) per `plans.md`.
+
 ## 2026-06-17 — Session 6: Phase 2 planning
 
 - Phase 1 (M1–M5) confirmed complete; user agreed to begin scoping Phase 2
