@@ -307,7 +307,7 @@ Container behavior:
 typirOS uses a combined strategy:
 
 **Strategy A — Android Compatibility Layer**
-For irreplaceable apps (WhatsApp, banking, maps, ride-hailing): run inside Android compatibility container, silently invoked by the AI, UI suppressed.
+For irreplaceable apps (WhatsApp, banking, maps, ride-hailing): run inside Android compatibility container, silently invoked by the AI, UI suppressed. Invocation is gated by a curated default allowlist, not "any detected app" — see §19.9.
 
 **Strategy C — AI as the App**
 For the long tail of functions: the AI handles them directly via APIs and tool calls, with no app required.
@@ -879,6 +879,15 @@ typirOS development runs a continuous speculative-design loop:
 - What-ifs are triaged into `tasks.md` (accepted), kept (parked), or closed (rejected with reason).
 - Accepted what-ifs that change product behavior get folded into the PRD as numbered addenda.
 - This section itself is the first output of the protocol.
+
+### 19.9 Curated App Allowlist — Friction by Design for Container Apps *(amends §7)*
+
+§7's Strategy A states that container apps are "silently invoked by the AI" the moment they're detected. That default is replaced with **restraint by policy**, merging the typing-first philosophy with a Light-Phone-style curated toolset:
+
+- The Android container has a **default allowlist** of sanctioned apps reachable from chat (WhatsApp ships allowed by default; the long tail does not).
+- Any container app outside the allowlist is **installed but inert** from the chat's perspective — detected, but not dispatchable — until the user deliberately runs `enable app <name>`.
+- Enabling an app is friction by design, mirroring 19.2's "ending a focus session requires a deliberate typed command": a one-line confirmation (`Enabled: <app>. It will route silently from now on.`), not a settings-screen toggle.
+- This changes Phase 2's success metric from *"any detected app works invisibly"* to *"only sanctioned apps work invisibly, and granting a new one is a conscious act"* — restraint lives in the allowlist gate, not in the UI.
 
 -----
 

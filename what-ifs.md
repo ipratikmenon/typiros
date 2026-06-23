@@ -9,26 +9,6 @@ Format: `WIF-NNN · status · phase estimate · one-line rationale`
 
 ## Open / Parked
 
-- **WIF-014 · parked · P2** — What if typirOS merged LightOS's restraint
-  with its own abstraction? Two different mechanisms reach the same
-  distraction-free goal: LightOS gets there by *subtraction* (a fixed,
-  curated toolset — calls, texts, alarm, music, nothing else — deliberately
-  hard to expand); typirOS gets there by *abstraction* (apps still exist and
-  run, even a full WhatsApp-in-container, but are hidden behind one chat
-  interface). A merge makes restraint a policy, not just a UI choice: a
-  curated default tool/app allowlist reachable from chat, where anything
-  outside it requires a deliberate "install"-style opt-in rather than
-  silently working the moment it's detected in the Android container.
-  Concretely this would change Phase 2's success metric from "any app works
-  invisibly" to "only sanctioned apps work, invisibly, and adding one is a
-  deliberate act" — and would add an allowlist gate in front of the
-  `AndroidContainer` mock backend (M6) so `send_whatsapp` (and any future
-  container call) checks membership before dispatching, with a `enable app
-  X` grammar command as the deliberate opt-in. Risk: caps the project's own
-  pitch of "any app, no UI" — needs a PRD-level decision (extend §7's
-  Strategy A+C or add a new §19.x friction-by-design clause) before
-  Phase 2 M6 is built, since it changes the backend's contract, not just
-  its mock implementation.
 - **WIF-013 · parked · P2** — What if the Tier 2 stub (Phase 2 M8) doubled
   as a grammar-gap logger? Every off-grammar input that falls through to
   `tier2.py` is, by definition, a Tier 1 miss. Logging those misses (text +
@@ -82,6 +62,13 @@ Format: `WIF-NNN · status · phase estimate · one-line rationale`
   primitive, not an app? Became Focus Sessions.
 - **WIF-004 · accepted → PRD §19.6 · P5** — What if a hardware keyboard were
   first-class? Folded into hardware-PRD inputs.
+- **WIF-014 · accepted → PRD §19.9 · P2** — What if typirOS merged LightOS's
+  restraint (subtraction-based minimalism) with its own abstraction
+  (apps hidden, not removed)? Became the curated App Allowlist: a default
+  allowlist gates the `AndroidContainer` backend, with `enable app <name>`
+  as the deliberate opt-in for anything outside it. Phase 2 M6 scope
+  updated in plans.md/tasks.md to build the gate alongside the mock
+  backend, not as a later bolt-on.
 
 ## Rejected
 

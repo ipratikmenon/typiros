@@ -54,10 +54,13 @@ Detailed scope in [plans.md](plans.md#phase-2-plan--android-container--core-agen
 Sandbox has no real Android runtime, WhatsApp account, or Tier 2 credentials —
 all Phase 2 backends are mocks behind real interfaces, same pattern as Phase 1.
 
-### M6 — Android container (mock)
-- [ ] `backends/android.py`: `AndroidContainer` mock (`send_whatsapp`, `is_installed`)
+### M6 — Android container (mock) + app allowlist
+- [ ] `backends/android.py`: `AndroidContainer` mock (`send_whatsapp`, `is_installed`, `is_allowed`)
+- [ ] Default allowlist seeded with `whatsapp`; PRD §19.9
+- [ ] `enable app <name>` grammar — deliberate opt-in, one-line confirmation
 - [ ] WhatsApp as a channel alongside primary/secondary SIM in `send_message`
 - [ ] `message X via whatsapp` grammar; `no, whatsapp` correction
+- [ ] Dispatch to a non-allowlisted app fails in language ("X isn't enabled yet — try `enable app X`")
 
 ### M7 — Media agent (mock)
 - [ ] `backends/media.py`: `Media` mock (`play`, `pause`, `now_playing`)

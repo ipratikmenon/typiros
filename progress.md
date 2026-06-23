@@ -39,6 +39,19 @@ Reverse-chronological. Every working session gets an entry.
   (parked, P2) — needs a PRD-level decision before it changes M6's backend
   contract. No plans.md/tasks.md changes yet; current Phase 2 plan stands
   until that decision is made.
+- User decided: accept the merge. Added **PRD §19.9 "Curated App Allowlist —
+  Friction by Design for Container Apps"** (amends §7's Strategy A, which
+  previously said container apps are "silently invoked... the moment
+  they're detected"). New default: a curated allowlist (seeded with
+  WhatsApp) gates the container; anything else detected is installed but
+  inert until a deliberate `enable app <name>` command. Phase 2's success
+  metric reframed from "any detected app works invisibly" to "only
+  sanctioned apps work invisibly, and granting a new one is a conscious
+  act." Updated `plans.md` (M6 stack-decision row + milestone description)
+  and `tasks.md` (M6 work items: `is_allowed` check, default allowlist,
+  `enable app` grammar, non-allowlisted dispatch failing in language) to
+  build the gate alongside the `AndroidContainer` mock, not as a later
+  bolt-on. WIF-014 moved from parked to accepted.
 
 ## 2026-06-16 — Session 5: Phase 1 M5 — Textual TUI shell
 

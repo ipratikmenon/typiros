@@ -87,7 +87,8 @@ later is a backend replacement, not a rewrite.
 
 | Decision | Choice | Rationale |
 |---|---|---|
-| Android container | Mock `AndroidContainer` backend exposing `send_whatsapp(contact, body)`, `is_installed(app)` | Mirrors `telephony.py`'s mock-now/real-later pattern; real backend would be a Waydroid/Anbox bridge |
+| Android container | Mock `AndroidContainer` backend exposing `send_whatsapp(contact, body)`, `is_installed(app)`, gated by an `is_allowed(app)` allowlist check (PRD §19.9) | Mirrors `telephony.py`'s mock-now/real-later pattern; real backend would be a Waydroid/Anbox bridge. Detected ≠ dispatchable — only allowlisted apps route silently by default |
+| App allowlist | Default allowlist seeded with `whatsapp`; `enable app <name>` grammar adds an app, one-line confirmation, no settings screen | PRD §19.9 — restraint by policy, not UI; merges LightOS's subtraction-based minimalism with typirOS's abstraction (WIF-014, accepted) |
 | WhatsApp routing | Bridge Layer treats `whatsapp` as a channel alongside `primary`/`secondary` SIM in `send_message` | Reuses existing channel-selection + correction-flow (`no, whatsapp`) machinery from M2, no new grammar shape |
 | Media agent | Mock `Media` backend: `play(track)`, `pause()`, `now_playing()` — printed strip, no real audio | Same mock-strip pattern as `productivity.py` timers |
 | Tier 2 escalation | Stub `Tier2` module: routes off-grammar input through the same `agents/*.yaml` manifests, returns a canned/echo response tagged `[tier2-stub]` | Proves the two-model routing shape without requiring API credentials in this sandbox; swappable for a real `ant` call |
@@ -106,10 +107,13 @@ shell/typiros_shell/
 
 ### Milestones
 
-- **M6 — Android container (mock):** `AndroidContainer` backend; `message X
-  via whatsapp` / `message X` (when only WhatsApp is reachable) grammar;
-  WhatsApp joins the channel set alongside primary/secondary SIM, including
-  `no, whatsapp` correction.
+- **M6 — Android container (mock) + app allowlist:** `AndroidContainer`
+  backend; `message X via whatsapp` / `message X` (when only WhatsApp is
+  reachable) grammar; WhatsApp joins the channel set alongside
+  primary/secondary SIM, including `no, whatsapp` correction. Gated by a
+  default allowlist (PRD §19.9): only allowlisted apps dispatch silently;
+  `enable app <name>` is the deliberate opt-in for anything else detected in
+  the container.
 - **M7 — Media agent (mock):** `play <track>`, `pause`, `what's playing`
   grammar; now-playing context strip (max-3 strip budget, same as call/timer).
 - **M8 — Tier 2 stub + two-model routing:** off-grammar input that fails Tier
