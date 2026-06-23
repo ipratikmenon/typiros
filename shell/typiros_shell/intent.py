@@ -36,7 +36,14 @@ class Quit:
     pass
 
 
-Result = ToolCall | Clarify | Say | Quit
+@dataclass
+class Escalate:
+    """Off-grammar input — Tier 1 has no parse; escalates to Tier 2 (PRD §18)."""
+
+    text: str
+
+
+Result = ToolCall | Clarify | Say | Quit | Escalate
 
 HELP = """typirOS — type what you want done. Examples:
   call lena                          message philip sharma running late
@@ -52,6 +59,7 @@ HELP = """typirOS — type what you want done. Examples:
   again                              edit  (recall / show last command)
   focus 90m on writing               end focus
   digest every 30m                   digest off
+Off-grammar input escalates to Tier 2 (stubbed — no live model call yet).
 Slash fast paths: /call /msg /missed /help /quit"""
 
 SLASH_ALIASES = {
@@ -154,10 +162,7 @@ def parse(raw: str) -> Result:
     if m := re.match(r"focus\s+(.+)", low):
         return ToolCall("start_focus", {"duration": m.group(1).strip(), "label": "focus"})
 
-    return Say(
-        "I can't parse that on-grammar yet — in the full OS this escalates "
-        "to the AI runtime. /help shows what works today."
-    )
+    return Escalate(text)
 
 
 def _split_channel(words: list[str]) -> tuple[list[str], str | None, str | None]:

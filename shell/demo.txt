@@ -40,4 +40,6 @@ message philip sharma hey on instagram
 play some jazz
 what did i miss
 pause
+what's the weather in paris
+send an email to mom
 /quit

@@ -1,2 +1,3 @@
 __pycache__/
 *.pyc
+shell/typiros_shell/user_memory.db

@@ -13,10 +13,11 @@ from .backends.productivity import Productivity, _parse_duration
 from .backends.telephony import Telephony
 from .memory import FocusSession, SessionMemory
 from .notifications import QuietQueue
+from .user_memory import UserMemory
 
 
 class Bridge:
-    def __init__(self, memory: SessionMemory, queue: QuietQueue) -> None:
+    def __init__(self, memory: SessionMemory, queue: QuietQueue, user_memory: UserMemory) -> None:
         self.telephony = Telephony()
         self.device = Device()
         self.productivity = Productivity()
@@ -24,6 +25,8 @@ class Bridge:
         self.media = Media()
         self.memory = memory
         self.queue = queue
+        self.user_memory = user_memory
+        self.android.allowlist |= self.user_memory.enabled_apps()
 
     def dispatch(self, tool: str, args: dict) -> str:
         try:
@@ -33,11 +36,16 @@ class Bridge:
 
     def _route(self, tool: str, args: dict) -> str:
         if tool == "make_call":
-            sim = args.get("sim") or self.memory.last_sim
+            contact = args["contact"]
+            sim = (
+                args.get("sim")
+                or self.user_memory.get_sim_preference(contact.name)
+                or self.memory.last_sim
+            )
             self.memory.last_sim = sim
-            self.memory.last_contact = args["contact"]
+            self.memory.last_contact = contact
             self.memory.last_dispatch = ("make_call", {**args, "sim": sim})
-            return self.telephony.make_call(args["contact"], sim)
+            return self.telephony.make_call(contact, sim)
         if tool == "end_call":
             return self.telephony.end_call()
         if tool == "send_message":
@@ -50,12 +58,18 @@ class Bridge:
                     )
                 self.memory.last_dispatch = ("send_message", {**args, "sim": self.memory.last_sim})
                 return self.android.send(channel, args["contact"], args["body"])
-            sim = args.get("sim") or self.memory.last_sim
+            sim = (
+                args.get("sim")
+                or self.user_memory.get_sim_preference(args["contact"].name)
+                or self.memory.last_sim
+            )
             self.memory.last_sim = sim
             self.memory.last_dispatch = ("send_message", {**args, "sim": sim})
             return self.telephony.send_message(args["contact"], channel, sim, args["body"])
         if tool == "enable_app":
-            return self.android.enable(args["app"])
+            result = self.android.enable(args["app"])
+            self.user_memory.enable_app(args["app"].lower())
+            return result
         if tool == "play_track":
             return self.media.play(args["track"])
         if tool == "pause_media":

@@ -63,6 +63,18 @@ What works:
 - **Media agent (mock):** `play some jazz` / `pause` / `what's playing`
   drive the mock `Media` backend; `[media] <track> · playing|paused` strip
   shares the max-3 budget with call/timer/focus strips
+- **Tier 2 stub (PRD §18):** input that doesn't parse on-grammar escalates
+  instead of failing in language — `tier2.py` reads the `agents/*.yaml`
+  manifests, picks the best-matching System Agent by keyword overlap, and
+  returns a canned `[tier2-stub] typiros-information would handle: "..."`
+  response. No subprocess, no API call — proves the two-model routing shape
+  without cloud credentials
+- **User memory layer (PRD §13):** SIM corrections (`no, secondary`) and
+  macro definitions now persist to a local sqlite file
+  (`typiros_shell/user_memory.db`) and survive process restarts — call Lena
+  once with `no, secondary` and every future `call lena` in a later session
+  defaults to Secondary. Piped/scripted runs (`demo.txt`, tests) use an
+  in-memory DB instead, so the demo stays deterministic across repeated runs
 
 ## Running
 
@@ -96,7 +108,9 @@ typiros_shell/
 ├── bridge.py         # Bridge Layer: routing + error→language translation
 ├── contacts.py       # contact store, prefix resolution, 2-chip max
 ├── memory.py         # session memory (last SIM, last contact, pending)
+├── user_memory.py    # User memory layer: sqlite-backed SIM prefs, allowlist, macros
 ├── notifications.py  # quiet queue + digest
+├── tier2.py          # Tier 2 stub: off-grammar input → agents/*.yaml-routed canned response
 └── backends/         # mocks with PRD §5 tool-manifest signatures
     ├── telephony.py  # make_call / end_call / send_message
     ├── device.py     # set_setting
@@ -107,6 +121,7 @@ typiros_shell/
 
 The UI layer (main.py) is deliberately thin: M5 replaces it with a TUI and
 later a mobile shell without touching intent/bridge/backends. Off-grammar
-input currently fails in language; M4 adds the Tier 1 local-LLM fallback.
+input escalates to the Tier 2 stub (M8); a real local LLM Tier 1 fallback
+remains a Phase 1 M4 item for real hardware.
 
-See [plans.md](../plans.md) for milestones M1–M5.
+See [plans.md](../plans.md) for milestones M1–M9.

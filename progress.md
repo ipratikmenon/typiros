@@ -4,6 +4,58 @@ Reverse-chronological. Every working session gets an entry.
 
 ---
 
+## 2026-06-23 — Session 9: Phase 2 M8 + M9 — Tier 2 stub, User memory layer
+
+User asked to plan and complete all remaining Phase 2 sprints in one pass.
+
+**M8 — Tier 2 stub + two-model routing:**
+- New `tier2.py`: `_load_manifests()` regex-parses `agents/*.yaml` (`name:`
+  line + the `You handle/dispatch ...` sentence) into keyword sets — no
+  PyYAML dependency, keeping the project's stdlib-only stack decision.
+  `route(text)` scores each manifest by word overlap with the input and
+  returns `[tier2-stub] <agent-name> would handle: "<text>"`, defaulting to
+  `typiros-information` on no match.
+- `intent.py`: new `Escalate(text)` result type replaces the old generic
+  "I can't parse that" `Say` fallback at the end of `parse()` — keeps Tier 1
+  pure/deterministic while making the escalation explicit in the type
+  system. `HELP` updated.
+- `main.py`: `Shell.handle()` routes `Escalate` results through
+  `tier2.route()`.
+- Verified: off-grammar phrases route to the right agent by keyword overlap
+  — "what's the weather in paris" → `typiros-information`, "send an email
+  to mom" → `typiros-communication`. Added both to `demo.txt`.
+
+**M9 — User memory layer:**
+- New `user_memory.py`: `UserMemory` wraps a stdlib `sqlite3` connection
+  (file `typiros_shell/user_memory.db`) with three tables — `sim_preference`
+  (contact → SIM), `enabled_apps` (Phase 2 M6 allowlist), `macros`
+  (trigger → `\x1f`-joined actions). PRD §13 calls for an *encrypted* local
+  DB; the prototype docstring is explicit that encryption is deferred to
+  Phase 4 hardening (§15), not silently implied.
+- `bridge.py`: `Bridge.__init__` now takes a `UserMemory` and seeds
+  `self.android.allowlist` from `user_memory.enabled_apps()` on construction
+  — apps enabled in a prior session stay enabled. `make_call`/`send_message`
+  consult `user_memory.get_sim_preference(contact.name)` before falling back
+  to session-level `last_sim`. `enable_app` now persists via
+  `user_memory.enable_app(...)` after a successful enable.
+- `main.py`: `Shell.__init__` picks `:memory:` for piped/non-tty runs
+  (`demo.txt`, tests) and the real DB file for interactive runs — keeps the
+  scripted demo reproducible across repeated runs while real usage persists.
+  Loads persisted macros into session memory at startup. `_correct()`
+  persists the SIM preference after a successful `no, primary`/`no,
+  secondary` redispatch; `_define_macro()` persists the macro definition.
+- Verified manually with two sequential interactive process runs (real DB
+  file, not demo.txt): `call lena` → `no, secondary` in run 1, then plain
+  `call lena` in run 2 dials Secondary automatically — preference survived
+  the restart. Same check for a macro defined in run 1 and invoked in run 2.
+  Cleaned up the test DB file afterward; added
+  `shell/typiros_shell/user_memory.db` to `.gitignore`.
+- `demo.txt` still passes end-to-end (ephemeral `:memory:` DB keeps it
+  deterministic); confirmed no stray `.db` file is left behind by a demo run.
+- Updated `shell/README.md` (What works + architecture tree) and `tasks.md`
+  (M8, M9 checked off). **Phase 2 M6–M9 all done** — every milestone in the
+  current `plans.md` Phase 2 plan is now built and demoed.
+
 ## 2026-06-23 — Session 8: Phase 2 M7 — Media agent (mock)
 
 - New `backends/media.py`: `Media` mock — `play(track)` sets

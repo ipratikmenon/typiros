@@ -9,13 +9,14 @@ import re
 import sys
 import time
 
-from . import contacts, intent
+from . import contacts, intent, tier2
 from .bridge import Bridge
 from .contacts import Contact
 from .event_sim import EventSimulator
-from .intent import Clarify, Quit, Say, ToolCall
+from .intent import Clarify, Escalate, Quit, Say, ToolCall
 from .memory import Pending, SessionMemory
 from .notifications import QuietQueue
+from .user_memory import DEFAULT_DB_PATH, UserMemory
 
 CORRECTION_RE = re.compile(r"no,?\s+(primary|secondary|whatsapp)\.?", re.IGNORECASE)
 MACRO_DEF_RE = re.compile(r"when i type (\S+),\s*(.+)", re.IGNORECASE)
@@ -25,9 +26,14 @@ class Shell:
     def __init__(self) -> None:
         self.memory = SessionMemory()
         self.queue = QuietQueue()
-        self.bridge = Bridge(self.memory, self.queue)
-        self.sim = EventSimulator(self.queue)
         self.echo_input = not sys.stdin.isatty()
+        # Scripted/piped runs (demo.txt, tests) stay ephemeral so they're
+        # reproducible; interactive runs persist to the User memory layer.
+        db_path = ":memory:" if self.echo_input else DEFAULT_DB_PATH
+        self.user_memory = UserMemory(db_path)
+        self.memory.macros.update(self.user_memory.macros())
+        self.bridge = Bridge(self.memory, self.queue, self.user_memory)
+        self.sim = EventSimulator(self.queue)
 
     # ----- one turn of the single loop (PRD §3) -----
 
@@ -61,6 +67,8 @@ class Shell:
             return None
         if isinstance(result, Say):
             return result.text
+        if isinstance(result, Escalate):
+            return tier2.route(result.text)
         if isinstance(result, Clarify):
             self.memory.pending = result.pending
             return self._render_clarify(result)
@@ -83,7 +91,9 @@ class Shell:
         new_sim = value.title()
         if tool == "make_call":
             self.bridge.dispatch("end_call", {})  # hang up before redialling
-        return self.bridge.dispatch(tool, {**args, "sim": new_sim})
+        result = self.bridge.dispatch(tool, {**args, "sim": new_sim})
+        self.user_memory.set_sim_preference(args["contact"].name, new_sim)
+        return result
 
     # ----- macros (PRD §19.3: "when I type X, do A and B") -----
 
@@ -93,6 +103,7 @@ class Shell:
             if not isinstance(intent.parse(part), ToolCall):
                 return f'I can only macro things I already understand — "{part}" isn\'t on-grammar yet.'
         self.memory.macros[trigger] = parts
+        self.user_memory.set_macro(trigger, parts)
         plural = "s" if len(parts) != 1 else ""
         return f'Got it — typing "{trigger}" will now do {len(parts)} thing{plural}.'
 

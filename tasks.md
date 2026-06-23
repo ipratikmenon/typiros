@@ -67,12 +67,15 @@ all Phase 2 backends are mocks behind real interfaces, same pattern as Phase 1.
 - [x] `play <track>` / `pause` / `what's playing` grammar
 - [x] Now-playing context strip (within max-3 strip budget)
 
-### M8 — Tier 2 stub + two-model routing
-- [ ] `tier2.py`: off-grammar input routes here instead of failing in language
-- [ ] Canned/echo response tagged `[tier2-stub]`
-- [ ] Routing reads `agents/*.yaml` manifests (no live API call)
+### M8 — Tier 2 stub + two-model routing ✅ (2026-06-23)
+- [x] `tier2.py`: off-grammar input routes here instead of failing in language
+- [x] Canned/echo response tagged `[tier2-stub]`
+- [x] Routing reads `agents/*.yaml` manifests (no live API call)
 
-### M9 — User memory layer
-- [ ] `user_memory.py`: sqlite-backed contacts/preferences/macros
-- [ ] Seeds from existing in-memory `Contacts`/macros on first run
-- [ ] Session memory (RAM, per-run) stays unchanged
+### M9 — User memory layer ✅ (2026-06-23)
+- [x] `user_memory.py`: sqlite-backed SIM preferences, app allowlist, macros
+- [x] SIM corrections (`no, secondary`) and macro definitions persist across
+      restarts; session loads persisted macros at startup
+- [x] Scripted/piped runs (demo.txt, tests) use an in-memory DB so they stay
+      deterministic; only interactive runs persist to disk
+- [x] Session memory (RAM, per-run) stays unchanged
