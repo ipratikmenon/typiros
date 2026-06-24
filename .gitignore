@@ -1,3 +1,6 @@
 __pycache__/
 *.pyc
 shell/typiros_shell/user_memory.db
+shell/typiros_shell/user_memory.key
+shell/typiros_shell/episodic_memory.db
+shell/typiros_shell/episodic_memory.key

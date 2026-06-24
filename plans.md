@@ -231,17 +231,15 @@ real code review — rather than mocking "hardening" the way earlier phases mock
 hardware. ROM packaging and battery optimization stay out of scope; they need
 real hardware/AOSP, not a different mock.
 
-### Open decision: memory encryption at rest (PRD §15)
+### Stack decision: memory encryption at rest (PRD §15) — resolved
 
 PRD §15 specifies "All memory layers are stored on-device in SQLCipher-encrypted
-databases." `user_memory.py` (M9) and `episodic_memory.py` (M15) both use plain
+databases." `user_memory.py` (M9) and `episodic_memory.py` (M15) used plain
 stdlib `sqlite3` — Python's stdlib has no AES/authenticated-encryption primitive,
-so honoring this for real means adding the project's first dependency outside the
-standard library (e.g. `cryptography` or `pysqlcipher3`). Faking it (e.g. a
-reversible XOR "cipher") would be worse than not mentioning it — it isn't
-security. This is the one stack decision Phase 4 can't make unilaterally; tracked
-as a question to the user before any encryption work starts, not something to
-implement silently in either direction.
+so honoring this for real meant adding a dependency. Asked the user rather than
+deciding solo or faking it; the user chose to add one. `cryptography` (AES-256-GCM)
+is now the project's first dependency outside the standard library
+(`shell/requirements.txt`), wired in via `crypto_store.py` — see M18.
 
 ### Milestones
 

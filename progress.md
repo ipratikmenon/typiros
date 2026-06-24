@@ -4,6 +4,43 @@ Reverse-chronological. Every working session gets an entry.
 
 ---
 
+## 2026-06-24 — Session 18: Phase 4 M18 — Memory encryption at rest
+
+- Asked the user whether to add a dependency to honor PRD §15's SQLCipher
+  requirement, since `user_memory.py`/`episodic_memory.py` had been plain
+  stdlib `sqlite3` since M9/M15 and the stack had been dependency-free
+  through Phase 3. User chose to add one.
+- New `crypto_store.py`: real AES-256-GCM via `cryptography` (now
+  `shell/requirements.txt`'s one entry) — not a placeholder cipher.
+  `sqlite3` can't write straight into ciphertext (that's what SQLCipher
+  does at the page level, and there's no pure-Python build available
+  here), so `EncryptedSqliteFile` opens a private temp-file copy for
+  sqlite3 to use, decrypting the on-disk file into it at startup, and
+  flushes fresh ciphertext back over the real path after every write —
+  so a crash mid-session loses no more than a crash against a plain
+  sqlite file would have. Per-file key stored alongside the db
+  (`*.key`, `chmod 0o600`), generated on first use.
+- Wired into `user_memory.py` and `episodic_memory.py`: any non-`:memory:`
+  db path now goes through `crypto_store.py`; piped/scripted runs
+  (`demo.txt`, the existing in-memory-DB convention) are unaffected since
+  `:memory:` skips encryption entirely — there's no file to protect.
+  `close()` on both classes now also cleans up the temp file.
+- Verified directly (not just "it imports"): wrote a sim preference and a
+  macro, confirmed the on-disk `user_memory.db` contains no `SQLite
+  format 3` header and no plaintext `"secondary"` substring, then reopened
+  the file in a fresh process and confirmed both values decrypt back
+  correctly. Repeated the same check for `episodic_memory.db`. Re-ran
+  `demo.txt` end-to-end (exit 0, no behavior change — it uses the
+  in-memory path).
+- Hit one sandbox-environment issue along the way: the system
+  `cryptography` install was missing its `_cffi_backend` native
+  dependency; `pip install --user cffi` fixed it. Unrelated to the code
+  itself but worth knowing if `requirements.txt` install ever still fails
+  with a `pyo3_runtime.PanicException`.
+- Next: M16 (Bridge/container-isolation security audit) and M17 (Tier 1
+  performance profiling) are next in Phase 4 — neither depends on
+  anything decided here.
+
 ## 2026-06-24 — Session 17: Wrap-up pass + Phase 4 plan
 
 - Wrap-up pass over tracking docs now that Phase 3 is fully done: moved

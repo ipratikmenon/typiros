@@ -137,8 +137,13 @@ profiling and the security audit are genuinely buildable in this sandbox.
       full grammar surface
 - [ ] Report against PRD's <500ms target, with sandbox-CPU caveat stated
 
-### M18 — Memory encryption at rest
-- [ ] Blocked on user decision: introduce a new dependency
-      (`cryptography`/`pysqlcipher3`) for real SQLCipher-style encryption of
-      `user_memory.py`/`episodic_memory.py`, or accept the plain-sqlite gap
-      vs. PRD §15 and document it as a known limitation instead
+### M18 — Memory encryption at rest ✅ (2026-06-24)
+- [x] User decision: add `cryptography` as the project's first
+      non-stdlib dependency (`shell/requirements.txt`)
+- [x] `crypto_store.py`: AES-256-GCM encryption-at-rest — sqlite3 opens a
+      private temp-file copy; ciphertext is flushed back to the real path
+      after every write; per-file key stored alongside (`0o600`)
+- [x] `user_memory.py` / `episodic_memory.py` wired to `crypto_store.py`
+      for any non-`:memory:` db path; piped/scripted runs unaffected
+- [x] Verified: on-disk `.db` files contain no SQLite header and no
+      plaintext field values; reopening after "restart" decrypts correctly

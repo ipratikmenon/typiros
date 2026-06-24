@@ -5,14 +5,17 @@ typing-first and distraction-free (PRD §19).
 
 ## Phases 1–3 prototype (runnable now)
 
-A dependency-free Python implementation of the single loop (PRD §3):
-deterministic Tier 1 grammar parser → Bridge Layer → mock backends →
-one-line confirmation. Covers every milestone through Phase 3 (full agent
-coverage, keyboard system, episodic memory, full-screen overlays) — see
-[plans.md](../plans.md) for what's next.
+A Python implementation of the single loop (PRD §3): deterministic Tier 1
+grammar parser → Bridge Layer → mock backends → one-line confirmation.
+Covers every milestone through Phase 3 (full agent coverage, keyboard
+system, episodic memory, full-screen overlays) — see
+[plans.md](../plans.md) for what's next. Stdlib-only through Phase 3;
+Phase 4 M18 adds the project's first dependency (`cryptography`, for real
+memory encryption at rest — see below).
 
 ```bash
 cd shell
+pip install -r requirements.txt    # one dependency: cryptography (M18)
 python3 -m typiros_shell           # interactive
 python3 -m typiros_shell < demo.txt  # scripted end-to-end demo
 ```
@@ -77,6 +80,15 @@ What works:
   once with `no, secondary` and every future `call lena` in a later session
   defaults to Secondary. Piped/scripted runs (`demo.txt`, tests) use an
   in-memory DB instead, so the demo stays deterministic across repeated runs
+- **Memory encryption at rest (Phase 4 M18, PRD §15):** `user_memory.db`
+  and `episodic_memory.db` are AES-256-GCM ciphertext on disk
+  (`crypto_store.py`) — the project's first dependency outside the
+  standard library (`cryptography`). sqlite3 can't write straight into
+  ciphertext, so the working file lives in a private temp path for the
+  process lifetime and the encrypted bytes are flushed back to disk after
+  every write; the per-file key lives alongside it (`*.key`, `0o600`).
+  In-memory (piped/scripted) runs skip encryption entirely, same as the
+  plaintext-vs-`:memory:` split above
 - **Navigation agent (mock, Phase 3 M10):** `navigate to the airport` /
   `eta` / `where am i going` / `stop navigating` drive the mock `Navigation`
   backend; `[nav] <destination> · ETA <N> min` strip shares the max-3 budget
@@ -165,6 +177,7 @@ typiros_shell/
 ├── contacts.py       # contact store, prefix resolution, 2-chip max
 ├── memory.py         # session memory (last SIM, last contact, pending)
 ├── user_memory.py    # User memory layer: sqlite-backed SIM prefs, allowlist, macros
+├── crypto_store.py   # AES-256-GCM encryption-at-rest for user/episodic memory sqlite files (M18)
 ├── notifications.py  # quiet queue + digest
 ├── tier2.py          # Tier 2 stub: off-grammar input → agents/*.yaml-routed canned response; shares tokenize/best_match with keyboard.py
 ├── biometric.py      # Mock Biometric Gate: passphrase challenge, one unlock/session/domain
