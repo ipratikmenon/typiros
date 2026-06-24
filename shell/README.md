@@ -3,11 +3,13 @@
 The chat-window UI — the entire user-facing surface of typirOS (PRD §8),
 typing-first and distraction-free (PRD §19).
 
-## Phase 1 prototype (runnable now)
+## Phases 1–3 prototype (runnable now)
 
 A dependency-free Python implementation of the single loop (PRD §3):
 deterministic Tier 1 grammar parser → Bridge Layer → mock backends →
-one-line confirmation.
+one-line confirmation. Covers every milestone through Phase 3 (full agent
+coverage, keyboard system, episodic memory, full-screen overlays) — see
+[plans.md](../plans.md) for what's next.
 
 ```bash
 cd shell

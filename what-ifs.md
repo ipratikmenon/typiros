@@ -9,15 +9,19 @@ Format: `WIF-NNN · status · phase estimate · one-line rationale`
 
 ## Open / Parked
 
-- **WIF-015 · parked · P3** — What if Compact keyboard mode (Phase 3 M14)
-  reused `tier2.py`'s keyword-overlap scorer for abbreviation expansion
-  instead of a separate lookup table? The scorer already maps free text to
-  the closest matching intent by word overlap; Compact mode needs the same
-  shape in reverse — map a short abbreviation to the most likely full
-  phrase/tool call. Reusing one scorer for both keeps Tier 2 routing and
-  Compact-mode prediction from drifting into two different "closest match"
-  implementations. Needs a decision on whether the scorer moves to a shared
-  module or `keyboard.py` imports `tier2._load_manifests()` directly.
+- **WIF-016 · parked · P4** — What if strips were tappable, expanding to
+  the matching overlay, per PRD §9 ("Strips are tappable — tap expands to
+  the relevant overlay")? Phase 3 M15 built the overlay push/dismiss
+  mechanism (`overlays.py`) but the only trigger is typed grammar (`show
+  media`/`show maps`/`show photos`) — there's no path from clicking a
+  `[media]`/`[nav]` strip in the TUI to its overlay. Textual `Static`
+  widgets support `on_click`; the strips bar would need to become
+  per-strip clickable widgets instead of one joined `Static` string, and
+  each strip would need to carry its own `kind` so the click handler knows
+  which `OVERLAYS` entry to push. Needs a decision on whether that
+  refactor (one `Static` → N clickable strips) is worth it for a
+  prototype that's primarily typing-first by design (PRD §19) — tapping a
+  strip is arguably secondary to typing the same command.
 - **WIF-013 · parked · P2** — What if the Tier 2 stub (Phase 2 M8) doubled
   as a grammar-gap logger? Every off-grammar input that falls through to
   `tier2.py` is, by definition, a Tier 1 miss. Logging those misses (text +
@@ -78,6 +82,13 @@ Format: `WIF-NNN · status · phase estimate · one-line rationale`
   as the deliberate opt-in for anything outside it. Phase 2 M6 scope
   updated in plans.md/tasks.md to build the gate alongside the mock
   backend, not as a later bolt-on.
+- **WIF-015 · accepted → Phase 3 M14 · P3** — What if Compact keyboard mode
+  reused `tier2.py`'s keyword-overlap scorer for abbreviation expansion
+  instead of a separate lookup table? Resolved by extracting
+  `tier2.tokenize()`/`tier2.best_match()` as shared module-level
+  functions; `keyboard.py`'s `expand_compact()` and `tier2.route()` both
+  call them now, so Tier 2 routing and Compact-mode prediction share one
+  "closest match" implementation instead of drifting into two.
 
 ## Rejected
 
