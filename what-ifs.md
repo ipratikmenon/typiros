@@ -9,6 +9,17 @@ Format: `WIF-NNN · status · phase estimate · one-line rationale`
 
 ## Open / Parked
 
+- **WIF-017 · parked · P4** — What if the Biometric Gate's "personal data
+  retrieval" scope (PRD §15) extended past finance/episodic-history to the
+  Files agent (`find file`/`recent files`) and the Photos overlay? M16's
+  security audit drew the line at finance + episodic history because
+  those map cleanly onto the PRD's own examples ("banking, payments,
+  personal data retrieval" read as relationship/financial data), but a
+  stricter reading could call a user's file index or photo library
+  "personal data" too. Didn't gate them this session — doing so would
+  make the gate fire on nearly every read-only lookup, which cuts against
+  "one unlock per session, rest dispatch silently." Needs a decision on
+  where the line actually sits before extending `SENSITIVE_TOOLS` further.
 - **WIF-016 · parked · P4** — What if strips were tappable, expanding to
   the matching overlay, per PRD §9 ("Strips are tappable — tap expands to
   the relevant overlay")? Phase 3 M15 built the overlay push/dismiss
