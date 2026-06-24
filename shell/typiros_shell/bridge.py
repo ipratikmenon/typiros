@@ -16,6 +16,7 @@ from .backends.navigation import Navigation
 from .backends.productivity import Productivity, _parse_duration
 from .backends.telephony import Telephony
 from .biometric import BiometricGate
+from .episodic_memory import EpisodicMemory
 from .keyboard import Keyboard
 from .memory import FocusSession, SessionMemory
 from .notifications import QuietQueue
@@ -27,7 +28,13 @@ SENSITIVE_TOOLS = {"send_payment": "finance"}
 
 
 class Bridge:
-    def __init__(self, memory: SessionMemory, queue: QuietQueue, user_memory: UserMemory) -> None:
+    def __init__(
+        self,
+        memory: SessionMemory,
+        queue: QuietQueue,
+        user_memory: UserMemory,
+        episodic_memory: EpisodicMemory,
+    ) -> None:
         self.telephony = Telephony()
         self.device = Device()
         self.productivity = Productivity()
@@ -42,6 +49,7 @@ class Bridge:
         self.memory = memory
         self.queue = queue
         self.user_memory = user_memory
+        self.episodic_memory = episodic_memory
         self.android.allowlist |= self.user_memory.enabled_apps()
 
     def dispatch(self, tool: str, args: dict) -> str:
@@ -61,9 +69,15 @@ class Bridge:
             self.memory.last_sim = sim
             self.memory.last_contact = contact
             self.memory.last_dispatch = ("make_call", {**args, "sim": sim})
-            return self.telephony.make_call(contact, sim)
+            result = self.telephony.make_call(contact, sim)
+            self.episodic_memory.log(contact.name, result)
+            return result
         if tool == "end_call":
-            return self.telephony.end_call()
+            contact = self.telephony.active_call[0] if self.telephony.active_call else None
+            result = self.telephony.end_call()
+            if contact:
+                self.episodic_memory.log(contact.name, result)
+            return result
         if tool == "send_message":
             channel = args.get("channel", "sms")
             self.memory.last_contact = args["contact"]
@@ -73,7 +87,9 @@ class Bridge:
                         f"{channel} isn't enabled yet — try `enable app {channel}`"
                     )
                 self.memory.last_dispatch = ("send_message", {**args, "sim": self.memory.last_sim})
-                return self.android.send(channel, args["contact"], args["body"])
+                result = self.android.send(channel, args["contact"], args["body"])
+                self.episodic_memory.log(args["contact"].name, result)
+                return result
             sim = (
                 args.get("sim")
                 or self.user_memory.get_sim_preference(args["contact"].name)
@@ -81,7 +97,9 @@ class Bridge:
             )
             self.memory.last_sim = sim
             self.memory.last_dispatch = ("send_message", {**args, "sim": sim})
-            return self.telephony.send_message(args["contact"], channel, sim, args["body"])
+            result = self.telephony.send_message(args["contact"], channel, sim, args["body"])
+            self.episodic_memory.log(args["contact"].name, result)
+            return result
         if tool == "enable_app":
             result = self.android.enable(args["app"])
             self.user_memory.enable_app(args["app"].lower())
@@ -113,9 +131,15 @@ class Bridge:
         if tool == "balance":
             return self.finance.balance()
         if tool == "send_payment":
-            return self.finance.send_payment(args["contact"], args["amount"])
+            result = self.finance.send_payment(args["contact"], args["amount"])
+            self.episodic_memory.log(args["contact"].name, result)
+            return result
         if tool == "set_keyboard_mode":
             return self.keyboard.set_mode(args["name"])
+        if tool == "episode_history":
+            return self._episode_history(args.get("contact"))
+        if tool == "show_overlay":
+            return self._overlay_content(args["kind"])
         if tool == "set_setting":
             return self.device.set_setting(args["key"], args["value"])
         if tool == "set_alarm":
@@ -186,6 +210,29 @@ class Bridge:
         left = max(0, int(fs.end_at - time.monotonic()))
         return f"[focus] {fs.label} · {left // 60}:{left % 60:02d} left"
 
+    # ----- episodic memory (PRD §13, Phase 3 M15) -----
+
+    def _episode_history(self, contact) -> str:
+        name = contact.name if contact else None
+        rows = self.episodic_memory.recent(name)
+        if not rows:
+            return f"No history with {name} yet." if name else "No history yet."
+        header = f"History with {name}:" if name else "Recent history:"
+        lines = [header]
+        lines += [f"  {c} — {s}" for _ts, c, s in rows]
+        return "\n".join(lines)
+
+    # ----- full-screen overlays (PRD §8, Phase 3 M15; TUI only) -----
+
+    def _overlay_content(self, kind: str) -> str:
+        if kind == "media":
+            return self.media.now_playing()
+        if kind == "maps":
+            return self.navigation.current_route()
+        if kind == "photos":
+            return "128 photos · 3 albums (Camera Roll, Screenshots, Favorites)."
+        raise ValueError(f"no overlay called {kind!r}")
+
 
 def _translate(tool: str, exc: Exception) -> str:
     detail = str(exc)
@@ -209,4 +256,8 @@ def _translate(tool: str, exc: Exception) -> str:
         return f"Couldn't do that — {detail}."
     if tool == "set_keyboard_mode":
         return f"Couldn't switch that — {detail}."
+    if tool == "episode_history":
+        return f"Couldn't pull that up — {detail}."
+    if tool == "show_overlay":
+        return f"Couldn't show that — {detail}."
     return f"That didn't work — {detail}."

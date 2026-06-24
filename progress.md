@@ -4,6 +4,63 @@ Reverse-chronological. Every working session gets an entry.
 
 ---
 
+## 2026-06-24 — Session 16: Phase 3 M15 — Episodic memory + full-screen overlays
+
+- New `episodic_memory.py`: `EpisodicMemory` — sqlite-backed (plain stdlib
+  `sqlite3`, same encryption-deferred-to-Phase-4 stance as
+  `user_memory.py`), `log(contact, summary)` / `recent(contact=None,
+  limit=5)`. Each `log()` call also deletes rows older than 90 days, so
+  the rolling window (PRD §13) is enforced on write rather than needing a
+  separate cron/cleanup job. Scope decision: only contact-tied dispatches
+  are logged (calls, messages, payments) — "relationship context" is the
+  PRD's framing for this layer, and pure lookups (balance, weather,
+  digest pulls, overlay views) don't add any.
+- `bridge.py`: `Bridge.__init__` takes a fourth `episodic_memory`
+  parameter; `make_call`, `end_call`, both `send_message` branches
+  (telephony + Android container), and `send_payment` each call
+  `self.episodic_memory.log(contact.name, result)` — logging the same
+  one-line confirmation text the user already saw, so there's exactly one
+  source of truth for "what happened" rather than a second summarization
+  format. New `episode_history` tool (`_episode_history`) formats recent
+  rows, scoped to one contact or global; new `show_overlay` tool
+  (`_overlay_content`) returns the same plain-text content `now_playing`/
+  `current_route` already produce, plus a canned placeholder string for
+  photos (no gallery backend exists). Both gained `_translate` cases.
+- `main.py`: constructs `EpisodicMemory` with the same ephemeral-for-piped-
+  runs / persistent-for-interactive `:memory:` vs. `DEFAULT_DB_PATH`
+  pattern already used for `UserMemory`, and passes it into `Bridge`.
+- `intent.py`: new grammar `history` / `history with <contact>` →
+  `episode_history` (reuses the same `contacts.resolve` disambiguation
+  path as `_parse_call`/`_parse_message`/`_parse_payment` via a new
+  `_parse_history` helper — ambiguous contacts get the same `[1]/[2]`
+  chips); `show media|maps|photos|gallery` → `show_overlay`. `HELP`
+  updated.
+- New `overlays.py` (TUI-only): `OverlayScreen` base Textual `Screen` with
+  a single `Binding("escape", ...)` dismiss gesture (PRD §8: "always one
+  gesture away") popping back to chat; `MediaOverlay`/`MapsOverlay`/
+  `PhotosOverlay` placeholder subclasses, `OVERLAYS` kind→class map.
+- `tui.py`: `_on_submitted` peeks `intent.parse(raw)` (a second, throwaway
+  parse — `Shell.handle` stays UI-agnostic and is the one that actually
+  resolves/dispatches) purely to detect a `show_overlay` `ToolCall`; on a
+  match it pushes the corresponding `Screen` from `OVERLAYS`, with the
+  same response text `Shell.handle` already returned, as the overlay
+  body. Verified headless via `App.run_test()`: pushing `media`/`photos`
+  overlays and dismissing with Esc both work, and a running strip
+  (`navigate to the airport` → `[nav]` strip) survives an overlay
+  round-trip untouched. The line REPL (`main.py`) never pushes a screen —
+  `show media`/etc. there just print the same content inline, per
+  `plans.md`'s "TUI only" scope for M15.
+- Extended `shell/demo.txt`: `history with lena`, `history`, `show media`,
+  `show maps`, `show photos` appended after the M14 keyboard-mode lines.
+  Demo passes end-to-end; no stray `.db` file.
+- Updated `shell/README.md` ("What works", TUI section, architecture
+  tree) and `tasks.md` (M15 checked off).
+- M15 done — all 8 system agents, all 4 keyboard modes, both memory
+  layers beyond Session, and full-screen overlays are now in place,
+  completing every Phase 3 milestone in `plans.md`. Next: Phase 3 is
+  fully done: confirm with the user before deciding what's next (a Phase
+  3 wrap-up pass, or starting Phase 4 hardening items).
+
 ## 2026-06-24 — Session 15: Phase 3 M14 — Keyboard modes
 
 - `tier2.py` refactored to resolve WIF-015: extracted `tokenize(text)` and

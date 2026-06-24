@@ -115,7 +115,7 @@ only the rendered content is placeholder.
 - [x] Voice First: `/voice <text>` transcription proxy (no mic)
 - [x] Adaptive: `/sim sensor <signal> on/off` drives automatic mode switching per PRD §14's context table
 
-### M15 — Episodic memory + full-screen overlays
-- [ ] `episodic_memory.py`: sqlite-backed rolling 90-day summarized log of dispatched actions
-- [ ] `overlays.py`: Textual `Screen` subclasses for Media/Maps/Photos placeholders
-- [ ] Single-gesture (Esc) dismiss back to chat; TUI only, line REPL unaffected
+### M15 — Episodic memory + full-screen overlays ✅ (2026-06-24)
+- [x] `episodic_memory.py`: sqlite-backed rolling 90-day summarized log of dispatched actions
+- [x] `overlays.py`: Textual `Screen` subclasses for Media/Maps/Photos placeholders
+- [x] Single-gesture (Esc) dismiss back to chat; TUI only, line REPL unaffected

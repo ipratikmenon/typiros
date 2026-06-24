@@ -70,4 +70,9 @@ what did i miss
 /voice call lena
 end call
 keyboard mode standard
+history with lena
+history
+show media
+show maps
+show photos
 /quit

@@ -12,6 +12,8 @@ import time
 from . import contacts, intent, tier2
 from .bridge import SENSITIVE_TOOLS, Bridge
 from .contacts import Contact
+from .episodic_memory import DEFAULT_DB_PATH as DEFAULT_EPISODIC_DB_PATH
+from .episodic_memory import EpisodicMemory
 from .event_sim import EventSimulator
 from .intent import Clarify, Escalate, Quit, Say, ToolCall
 from .memory import Pending, SessionMemory
@@ -32,7 +34,9 @@ class Shell:
         db_path = ":memory:" if self.echo_input else DEFAULT_DB_PATH
         self.user_memory = UserMemory(db_path)
         self.memory.macros.update(self.user_memory.macros())
-        self.bridge = Bridge(self.memory, self.queue, self.user_memory)
+        episodic_db_path = ":memory:" if self.echo_input else DEFAULT_EPISODIC_DB_PATH
+        self.episodic_memory = EpisodicMemory(episodic_db_path)
+        self.bridge = Bridge(self.memory, self.queue, self.user_memory, self.episodic_memory)
         self.sim = EventSimulator(self.queue)
 
     # ----- one turn of the single loop (PRD §3) -----

@@ -66,6 +66,8 @@ HELP = """typirOS — type what you want done. Examples:
   keyboard mode compact              keyboard mode standard
   keyboard mode voice first          keyboard mode adaptive
   /voice <text>                      (mic-button proxy in Voice First mode)
+  history                            history with lena
+  show media  /  show maps  /  show photos  (full-screen overlay, TUI only)
 Sending money asks for a one-time passphrase (1234) per session — mocks
 the Biometric Gate (PRD §15).
 Off-grammar input escalates to Tier 2 (stubbed — no live model call yet).
@@ -176,6 +178,15 @@ def parse(raw: str) -> Result:
     if m := re.match(r"keyboard mode\s+(.+)", low):
         return ToolCall("set_keyboard_mode", {"name": m.group(1).strip()})
 
+    # --- episodic memory (PRD §13, Phase 3 M15) ---
+    if m := re.fullmatch(r"history(?:\s+(?:with\s+)?(.+))?", low):
+        return _parse_history((m.group(1) or "").strip())
+
+    # --- full-screen overlays (PRD §8, Phase 3 M15; TUI only) ---
+    if m := re.match(r"show (media|maps?|photos|gallery)\b", low):
+        kind = {"map": "maps", "gallery": "photos"}.get(m.group(1), m.group(1))
+        return ToolCall("show_overlay", {"kind": kind})
+
     # --- finance agent (PRD §15: gated by the Biometric Gate) ---
     if re.fullmatch(r"balance\??", low):
         return ToolCall("balance", {})
@@ -258,6 +269,20 @@ def _parse_payment(amount: float, rest: str) -> Result:
     if len(matches) > 1:
         return Clarify(
             "Which one?", Pending("send_payment", args, "contact", matches), matches
+        )
+    return Say(f"No contact matching “{' '.join(words)}”.")
+
+
+def _parse_history(rest: str) -> Result:
+    if not rest:
+        return ToolCall("episode_history", {})
+    words = rest.split()
+    matches, leftover = contacts.resolve(words)
+    if len(matches) == 1 and not leftover:
+        return ToolCall("episode_history", {"contact": matches[0]})
+    if len(matches) > 1:
+        return Clarify(
+            "Which one?", Pending("episode_history", {}, "contact", matches), matches
         )
     return Say(f"No contact matching “{' '.join(words)}”.")
 

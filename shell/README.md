@@ -110,6 +110,21 @@ What works:
   setting where they already exist, and mocks the two signals with no
   existing equivalent (`driving`, `motion`) via `/sim sensor <signal>
   on/off`
+- **Episodic memory (Phase 3 M15, PRD §13):** `history` / `history with
+  lena` reads a rolling, sqlite-backed log of past contact-tied actions
+  (calls, messages, payments) via `episodic_memory.py`'s `EpisodicMemory`
+  — separate from the permanent User memory layer (prefs/macros) and the
+  RAM-only Session memory. Logged on every dispatched call/message/payment
+  in `bridge.py`; rows older than 90 days are pruned on each write so the
+  table stays a true rolling window. Piped/scripted runs use an in-memory
+  DB, same pattern as `user_memory.py`
+- **Full-screen overlays (Phase 3 M15, PRD §8, TUI only):** `show media` /
+  `show maps` / `show photos` push a placeholder full-screen `Screen`
+  (`overlays.py`) over the chat in the TUI — single dismiss gesture is
+  Esc, matching the PRD's "always one gesture away" rule; any running
+  call/timer/media keeps going underneath. In the line REPL the same
+  commands just print the content inline — no overlay support there by
+  design (TUI only per `plans.md`)
 
 ## Running
 
@@ -132,7 +147,11 @@ Layout (top → bottom):
 - **Input bar** — single-line text input; type anything, press Enter
 
 The UI layer (`tui.py`) is a drop-in replacement for `main.py`; the intent
-parser, bridge, memory, and all backends are unchanged.
+parser, bridge, memory, and all backends are unchanged. `tui.py` also owns
+the one TUI-only feature, full-screen overlays (Phase 3 M15): it peeks the
+parsed intent to detect a `show_overlay` command and pushes the matching
+`Screen` from `overlays.py` — `main.py`/`bridge.py` stay UI-agnostic and
+just return text either way.
 
 ## Architecture
 
@@ -148,6 +167,8 @@ typiros_shell/
 ├── tier2.py          # Tier 2 stub: off-grammar input → agents/*.yaml-routed canned response; shares tokenize/best_match with keyboard.py
 ├── biometric.py      # Mock Biometric Gate: passphrase challenge, one unlock/session/domain
 ├── keyboard.py       # Keyboard System (PRD §14): Compact/Standard/Voice First/Adaptive modes
+├── episodic_memory.py # Episodic memory layer: sqlite-backed rolling 90-day log of contact-tied actions
+├── overlays.py       # Full-screen overlay Screens (Media/Maps/Photos placeholders) — tui.py only
 └── backends/         # mocks with PRD §5 tool-manifest signatures
     ├── telephony.py  # make_call / end_call / send_message
     ├── device.py     # set_setting

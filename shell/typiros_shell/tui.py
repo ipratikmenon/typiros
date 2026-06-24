@@ -18,7 +18,10 @@ from textual.app import App, ComposeResult
 from textual.containers import Horizontal
 from textual.widgets import Input, RichLog, Static
 
+from . import intent
+from .intent import ToolCall
 from .main import Shell
+from .overlays import OVERLAYS
 
 
 _POLL_INTERVAL = 0.5  # seconds between strip/indicator refreshes
@@ -123,12 +126,21 @@ class TypirApp(App[None]):
 
         self._log(f"> {raw}")
 
+        # Peek the parse to detect a full-screen-overlay command (PRD §8,
+        # Phase 3 M15) — Shell.handle stays UI-agnostic and just returns
+        # text; pushing a Screen is this layer's decision alone.
+        peek = intent.parse(raw)
+
         response = self.shell.handle(raw)
         if response is None:
             self.exit()
             return
         if response:
             self._log_response(response)
+
+        if isinstance(peek, ToolCall) and peek.tool == "show_overlay":
+            if screen_cls := OVERLAYS.get(peek.args["kind"]):
+                self.push_screen(screen_cls(response))
 
         self._refresh_chips()
         self._poll()          # immediate strip / indicator refresh
