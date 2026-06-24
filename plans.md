@@ -215,6 +215,54 @@ shell/typiros_shell/
 
 ---
 
+## Phase 4 Plan — Hardening
+
+PRD §16's Phase 4 bullets, against what's actually buildable in this sandbox:
+
+| PRD §16 bullet | Sandbox-feasible? | Why |
+|---|---|---|
+| Package as custom Android ROM (AOSP base) | No | Needs a real AOSP build environment and target hardware; nothing to prototype in a Python shell |
+| Battery optimization for continuous AI runtime | No | Needs real hardware power telemetry; not modelable against a mock |
+| Performance profiling — <500ms Tier 1 response | Partial | Can benchmark Tier 1 parse + Bridge dispatch latency on sandbox CPU; honest caveat that this isn't "target hardware" per the PRD's own phrasing |
+| Security audit of Bridge Layer + container isolation | Yes | A real code review of `bridge.py`/`android.py` against PRD §15 (Container Isolation, Permission Model, Biometric Gate), with actionable stdlib-only fixes |
+
+**Goal:** do the two genuinely sandbox-feasible items for real — a real benchmark, a
+real code review — rather than mocking "hardening" the way earlier phases mocked
+hardware. ROM packaging and battery optimization stay out of scope; they need
+real hardware/AOSP, not a different mock.
+
+### Open decision: memory encryption at rest (PRD §15)
+
+PRD §15 specifies "All memory layers are stored on-device in SQLCipher-encrypted
+databases." `user_memory.py` (M9) and `episodic_memory.py` (M15) both use plain
+stdlib `sqlite3` — Python's stdlib has no AES/authenticated-encryption primitive,
+so honoring this for real means adding the project's first dependency outside the
+standard library (e.g. `cryptography` or `pysqlcipher3`). Faking it (e.g. a
+reversible XOR "cipher") would be worse than not mentioning it — it isn't
+security. This is the one stack decision Phase 4 can't make unilaterally; tracked
+as a question to the user before any encryption work starts, not something to
+implement silently in either direction.
+
+### Milestones
+
+- **M16 — Bridge Layer + container isolation security audit:** read through
+  `bridge.py` and `backends/android.py` against PRD §15's Container Isolation /
+  Permission Model / Biometric Gate requirements; document findings (gaps, not
+  just confirmations) and fix what's fixable with stdlib only.
+- **M17 — Tier 1 performance profiling:** a benchmark script timing grammar
+  parse (`intent.parse`) + `Bridge.dispatch` across the full grammar surface,
+  reported against the PRD's <500ms target with the sandbox-CPU caveat stated
+  up front.
+- **M18 — Memory encryption at rest (blocked on user decision above).**
+
+### Explicitly out of scope for Phase 4 (sandbox)
+
+- Custom Android ROM / AOSP packaging — needs real hardware build environment
+- Battery optimization — needs real hardware power telemetry
+- True target-hardware performance numbers — sandbox CPU isn't representative
+
+---
+
 ## Risks / Watch Items
 
 - **Grammar coverage ceiling:** deterministic parsing will miss phrasings; the

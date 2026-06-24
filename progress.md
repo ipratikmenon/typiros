@@ -4,6 +4,33 @@ Reverse-chronological. Every working session gets an entry.
 
 ---
 
+## 2026-06-24 — Session 17: Wrap-up pass + Phase 4 plan
+
+- Wrap-up pass over tracking docs now that Phase 3 is fully done: moved
+  WIF-015 (Compact mode reusing tier2's keyword-overlap scorer, shipped in
+  M14) from Open/Parked to Accepted in `what-ifs.md` — it had shipped two
+  sessions ago but never got moved. Logged a new WIF-016 (tappable strips
+  expanding to their overlay, per PRD §9) to restore the What-If Protocol's
+  one-per-session cadence, which had lapsed across M14 and M15. Fixed
+  `shell/README.md`'s stale "Phase 1 prototype (runnable now)" heading and
+  intro paragraph to reflect that the prototype now covers all of Phase 3.
+- Scoped Phase 4 (PRD §16) against what's sandbox-feasible: ROM packaging
+  and battery optimization need real hardware/AOSP and are out of scope;
+  performance profiling and a Bridge/container-isolation security audit are
+  genuinely buildable here. Wrote `## Phase 4 Plan — Hardening` into
+  `plans.md` (mirrors the Phase 1–3 structure) and added M16 (security
+  audit) / M17 (perf profiling) / M18 (memory encryption) skeletons to
+  `tasks.md`.
+- Surfaced one real decision point rather than deciding it solo: PRD §15
+  requires SQLCipher-encrypted memory layers, but `user_memory.py` and
+  `episodic_memory.py` both use plain stdlib `sqlite3` — the stack has been
+  zero-dependency since Phase 1. Doing real encryption means adding the
+  project's first external dependency; faking it would be worse than the
+  current honest gap. Asked the user before writing any M18 code either
+  way.
+- Next: M16 (security audit) and M17 (perf profiling) don't depend on the
+  encryption answer — start there once confirmed.
+
 ## 2026-06-24 — Session 16: Phase 3 M15 — Episodic memory + full-screen overlays
 
 - New `episodic_memory.py`: `EpisodicMemory` — sqlite-backed (plain stdlib

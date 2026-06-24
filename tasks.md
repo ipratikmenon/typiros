@@ -119,3 +119,26 @@ only the rendered content is placeholder.
 - [x] `episodic_memory.py`: sqlite-backed rolling 90-day summarized log of dispatched actions
 - [x] `overlays.py`: Textual `Screen` subclasses for Media/Maps/Photos placeholders
 - [x] Single-gesture (Esc) dismiss back to chat; TUI only, line REPL unaffected
+
+## Phase 4 — Hardening
+
+Detailed scope in [plans.md](plans.md#phase-4-plan--hardening). ROM packaging
+and battery optimization are hardware-only and out of scope; performance
+profiling and the security audit are genuinely buildable in this sandbox.
+
+### M16 — Bridge Layer + container isolation security audit
+- [ ] Review `bridge.py` + `backends/android.py` against PRD §15 (Container
+      Isolation, Permission Model, Biometric Gate)
+- [ ] Document findings (gaps, not just confirmations)
+- [ ] Fix what's fixable with stdlib only
+
+### M17 — Tier 1 performance profiling
+- [ ] Benchmark script: `intent.parse` + `Bridge.dispatch` latency across the
+      full grammar surface
+- [ ] Report against PRD's <500ms target, with sandbox-CPU caveat stated
+
+### M18 — Memory encryption at rest
+- [ ] Blocked on user decision: introduce a new dependency
+      (`cryptography`/`pysqlcipher3`) for real SQLCipher-style encryption of
+      `user_memory.py`/`episodic_memory.py`, or accept the plain-sqlite gap
+      vs. PRD §15 and document it as a known limitation instead
