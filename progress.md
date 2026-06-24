@@ -4,6 +4,59 @@ Reverse-chronological. Every working session gets an entry.
 
 ---
 
+## 2026-06-24 — Session 15: Phase 3 M14 — Keyboard modes
+
+- `tier2.py` refactored to resolve WIF-015: extracted `tokenize(text)` and
+  `best_match(words, candidates)` as shared module-level functions;
+  `route()` now calls them instead of inlining the keyword-overlap scoring
+  logic, so Compact-mode abbreviation expansion can reuse the same "closest
+  match" implementation instead of a second one.
+- New `keyboard.py`: `KeyboardMode` enum (Compact/Standard/Voice First/
+  Adaptive) and `Keyboard` class. No physical keyboard, mic, or
+  accelerometer in this terminal prototype, so each mode is mocked at the
+  behavior level: **Compact** matches raw input against a small canned
+  `COMPACT_EXPANSIONS` dict via `tier2.best_match`; **Standard** is the
+  unchanged default; **Voice First** has no live mic — `/voice <text>` is
+  the proxy a real mic button would call; **Adaptive** reuses already-
+  mocked state where it exists (`telephony.active_call`, `device.settings
+  ["dnd"]`) and only mocks the two signals with no existing equivalent
+  (`driving`, `motion`) via new `set_sensor`/`/sim sensor <signal> on/off`,
+  switching per PRD §14's context table in priority order: active call >
+  driving > motion > dnd > default voice nudge.
+- `bridge.py`: `Bridge.__init__` constructs `self.keyboard = Keyboard()`;
+  new route `set_keyboard_mode`; `strips()` appends `keyboard.strip(...)`
+  last (lowest priority, same tier as media/navigation); `_translate`
+  gained a case. `set_keyboard_mode` deliberately left out of
+  `SENSITIVE_TOOLS` — switching modes isn't a sensitive action.
+- `intent.py`: new grammar `keyboard mode <name>` → `set_keyboard_mode`.
+  `HELP` updated.
+- `main.py`: `/voice <text>` prefix re-enters `handle()` with the prefix
+  stripped. Compact-mode expansion is consulted in `handle()` — **bug
+  found and fixed during testing**: the first version called
+  `expand_compact` on every input *before* `intent.parse`, so well-formed
+  grammar could be wrongly re-matched against an unrelated abbreviation by
+  keyword overlap — e.g. typing `end call` while in Compact mode scored a
+  false-positive overlap (shared word "call") against the `"call lena"`
+  entry in `COMPACT_EXPANSIONS` and got re-expanded into `call lena`,
+  producing a spurious "already on a call" error instead of ending the
+  call. Fixed by parsing normally first and only falling back to
+  `expand_compact` when the result is `Escalate` (genuinely off-grammar),
+  so on-grammar input is never second-guessed by the fuzzy matcher.
+  `_simulate` gained a `sensor` sub-command parsing `/sim sensor <signal>
+  on/off` into `keyboard.set_sensor`.
+- Extended `shell/demo.txt`: Compact mode (`cl` → `end call`, verifying the
+  fix), Standard, Adaptive with the full `/sim sensor` priority sequence
+  (motion → driving → off → off), and `/voice call lena` → `end call`.
+  Manually verified the other three Compact abbreviations (`mm`, `wdim`,
+  bare `timer`) still expand correctly through the `Escalate`-gated
+  fallback, and that `keyboard mode bogus` fails gracefully in language.
+  Demo passes end-to-end; no stray `.db` file.
+- Updated `shell/README.md` ("What works" + architecture tree) and
+  `tasks.md` (M14 checked off).
+- M14 done — all four keyboard modes implemented in one pass per the
+  user's "yes for all 4 types". Next per `plans.md`: M15 (Episodic memory
+  + full-screen overlays).
+
 ## 2026-06-23 — Session 14: Phase 3 M13 — Finance agent (mock) + Biometric gate
 
 - New `biometric.py`: `BiometricGate` — `unlocked: set[str]` of confirmed

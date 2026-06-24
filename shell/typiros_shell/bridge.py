@@ -16,6 +16,7 @@ from .backends.navigation import Navigation
 from .backends.productivity import Productivity, _parse_duration
 from .backends.telephony import Telephony
 from .biometric import BiometricGate
+from .keyboard import Keyboard
 from .memory import FocusSession, SessionMemory
 from .notifications import QuietQueue
 from .user_memory import UserMemory
@@ -37,6 +38,7 @@ class Bridge:
         self.files = Files()
         self.finance = Finance()
         self.biometric = BiometricGate()
+        self.keyboard = Keyboard()
         self.memory = memory
         self.queue = queue
         self.user_memory = user_memory
@@ -112,6 +114,8 @@ class Bridge:
             return self.finance.balance()
         if tool == "send_payment":
             return self.finance.send_payment(args["contact"], args["amount"])
+        if tool == "set_keyboard_mode":
+            return self.keyboard.set_mode(args["name"])
         if tool == "set_setting":
             return self.device.set_setting(args["key"], args["value"])
         if tool == "set_alarm":
@@ -168,6 +172,10 @@ class Bridge:
             self.productivity.strip(),
             self.media.strip(),
             self.navigation.strip(),
+            self.keyboard.strip(
+                active_call=bool(self.telephony.active_call),
+                dnd=self.device.settings["dnd"] == "on",
+            ),
         ]
         return [s for s in strips if s][:3]
 
@@ -199,4 +207,6 @@ def _translate(tool: str, exc: Exception) -> str:
         return f"Couldn't find that — {detail}."
     if tool in ("balance", "send_payment"):
         return f"Couldn't do that — {detail}."
+    if tool == "set_keyboard_mode":
+        return f"Couldn't switch that — {detail}."
     return f"That didn't work — {detail}."

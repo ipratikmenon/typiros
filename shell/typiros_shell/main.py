@@ -41,6 +41,8 @@ class Shell:
         """Returns response text, or None to quit."""
         if raw.startswith("/sim "):           # dev-only: simulate inbound event
             return self._simulate(raw[5:])
+        if raw.startswith("/voice "):          # mic-button proxy (PRD §14 Voice First)
+            return self.handle(raw[len("/voice "):])
 
         if self.memory.pending:
             resolved = self._fill_pending(raw)
@@ -63,6 +65,8 @@ class Shell:
 
         text = intent.resolve_pronouns(stripped, self.memory.last_contact)
         result = intent.parse(text)
+        if isinstance(result, Escalate) and (expanded := self.bridge.keyboard.expand_compact(text)):
+            result = intent.parse(expanded)
         if isinstance(result, Quit):
             return None
         if isinstance(result, Say):
@@ -197,6 +201,14 @@ class Shell:
                 except ValueError:
                     interval = 30.0
                 self.sim.start(interval)
+            return ""
+        if low.startswith("sensor"):
+            rest = low[len("sensor"):].strip()
+            signal, _, state = rest.rpartition(" ")
+            try:
+                self.bridge.keyboard.set_sensor(signal, state == "on")
+            except ValueError as exc:
+                return f"Couldn't simulate that — {exc}."
             return ""
         kind, _, rest = spec.partition(" ")
         source, _, preview = rest.partition(":")

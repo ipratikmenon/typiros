@@ -48,14 +48,30 @@ def _load_manifests() -> list[AgentManifest]:
     return manifests
 
 
+def tokenize(text: str) -> set[str]:
+    return set(re.findall(r"[a-z']+", text.lower()))
+
+
+def best_match(words: set[str], candidates: dict[str, set[str]]) -> tuple[str | None, int]:
+    """Closest match by keyword overlap — shared by Tier 2 routing (agent
+    manifests, below) and Compact keyboard-mode abbreviation expansion
+    (keyboard.py, WIF-015) so both "closest match" use cases stay one
+    implementation."""
+    best_label, best_score = None, 0
+    for label, keywords in candidates.items():
+        score = len(words & keywords)
+        if score > best_score:
+            best_label, best_score = label, score
+    return best_label, best_score
+
+
 def route(text: str) -> str:
     """Pick the best-matching agent manifest by keyword overlap and return
     a stub response — the same shape a real ant session result would take
     once the Bridge Layer parses it back into one line."""
-    words = set(re.findall(r"[a-z']+", text.lower()))
-    best_agent, best_score = DEFAULT_AGENT, 0
-    for manifest in _load_manifests():
-        score = len(words & manifest.keywords)
-        if score > best_score:
-            best_agent, best_score = manifest.name, score
+    words = tokenize(text)
+    candidates = {m.name: m.keywords for m in _load_manifests()}
+    best_agent, score = best_match(words, candidates)
+    if best_agent is None or score == 0:
+        best_agent = DEFAULT_AGENT
     return f'[tier2-stub] {best_agent} would handle: "{text.strip()}"'

@@ -63,6 +63,9 @@ HELP = """typirOS — type what you want done. Examples:
   gm                                 (runs a macro)
   focus 90m on writing               end focus
   digest every 30m                   digest off
+  keyboard mode compact              keyboard mode standard
+  keyboard mode voice first          keyboard mode adaptive
+  /voice <text>                      (mic-button proxy in Voice First mode)
 Sending money asks for a one-time passphrase (1234) per session — mocks
 the Biometric Gate (PRD §15).
 Off-grammar input escalates to Tier 2 (stubbed — no live model call yet).
@@ -168,6 +171,10 @@ def parse(raw: str) -> Result:
     if m := re.match(r"what(?:'s| is) the capital of\s+(.+)", low):
         country = m.group(1).strip().rstrip("?")
         return ToolCall("get_fact", {"query": f"capital of {country}"})
+
+    # --- keyboard system (PRD §14) ---
+    if m := re.match(r"keyboard mode\s+(.+)", low):
+        return ToolCall("set_keyboard_mode", {"name": m.group(1).strip()})
 
     # --- finance agent (PRD §15: gated by the Biometric Gate) ---
     if re.fullmatch(r"balance\??", low):

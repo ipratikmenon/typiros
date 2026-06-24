@@ -108,12 +108,12 @@ only the rendered content is placeholder.
 - [x] `biometric.py`: mock passphrase challenge, one unlock per session per domain (PRD §15)
 - [x] `balance` / `send <amt> to <contact>` grammar; payment gated by the challenge before dispatch
 
-### M14 — Keyboard modes
-- [ ] `keyboard.py`: `KeyboardMode` enum (Compact/Standard/Voice First/Adaptive)
-- [ ] `keyboard mode <name>` manual switch grammar
-- [ ] Compact: abbreviation expansion reusing `tier2.py`'s keyword-overlap scorer
-- [ ] Voice First: `/voice <text>` transcription proxy (no mic)
-- [ ] Adaptive: `/sim sensor <signal> on/off` drives automatic mode switching per PRD §14's context table
+### M14 — Keyboard modes ✅ (2026-06-24)
+- [x] `keyboard.py`: `KeyboardMode` enum (Compact/Standard/Voice First/Adaptive)
+- [x] `keyboard mode <name>` manual switch grammar
+- [x] Compact: abbreviation expansion reusing `tier2.py`'s keyword-overlap scorer
+- [x] Voice First: `/voice <text>` transcription proxy (no mic)
+- [x] Adaptive: `/sim sensor <signal> on/off` drives automatic mode switching per PRD §14's context table
 
 ### M15 — Episodic memory + full-screen overlays
 - [ ] `episodic_memory.py`: sqlite-backed rolling 90-day summarized log of dispatched actions

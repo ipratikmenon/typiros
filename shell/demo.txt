@@ -56,4 +56,18 @@ send 20 to mom
 1234
 balance
 send 5 to mom
+keyboard mode compact
+cl
+end call
+keyboard mode standard
+keyboard mode adaptive
+/sim sensor motion on
+what did i miss
+/sim sensor driving on
+what did i miss
+/sim sensor driving off
+/sim sensor motion off
+/voice call lena
+end call
+keyboard mode standard
 /quit

@@ -96,6 +96,20 @@ What works:
   the Bridge Layer the same way the M6 allowlist check is; a wrong
   passphrase re-prompts, a correct one unlocks the `finance` domain for the
   rest of the session so further payments dispatch silently
+- **Keyboard system (mock, Phase 3 M14, PRD §14):** `keyboard mode compact`
+  / `standard` / `voice first` / `adaptive` switch input mode; `[keyboard]`
+  strip shows the active non-Standard mode. **Compact** expands a small set
+  of abbreviations (`cl`, `mm`, `wdim`, `timer`) via `tier2.py`'s shared
+  keyword-overlap scorer (`tokenize`/`best_match`, resolving WIF-015) —
+  tried only as a fallback when the raw input doesn't already match Tier 1
+  grammar, so on-grammar commands like `end call` are never misfired
+  against an unrelated abbreviation. **Voice First** has no mic in this
+  prototype; `/voice <text>` is the proxy a real mic button would call.
+  **Adaptive** switches automatically per PRD §14's context table — reuses
+  the telephony backend's active-call state and the device backend's `dnd`
+  setting where they already exist, and mocks the two signals with no
+  existing equivalent (`driving`, `motion`) via `/sim sensor <signal>
+  on/off`
 
 ## Running
 
@@ -131,8 +145,9 @@ typiros_shell/
 ├── memory.py         # session memory (last SIM, last contact, pending)
 ├── user_memory.py    # User memory layer: sqlite-backed SIM prefs, allowlist, macros
 ├── notifications.py  # quiet queue + digest
-├── tier2.py          # Tier 2 stub: off-grammar input → agents/*.yaml-routed canned response
+├── tier2.py          # Tier 2 stub: off-grammar input → agents/*.yaml-routed canned response; shares tokenize/best_match with keyboard.py
 ├── biometric.py      # Mock Biometric Gate: passphrase challenge, one unlock/session/domain
+├── keyboard.py       # Keyboard System (PRD §14): Compact/Standard/Voice First/Adaptive modes
 └── backends/         # mocks with PRD §5 tool-manifest signatures
     ├── telephony.py  # make_call / end_call / send_message
     ├── device.py     # set_setting
