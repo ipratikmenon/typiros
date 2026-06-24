@@ -4,25 +4,26 @@ project's first dependency outside the standard library: `cryptography`,
 for real AES-256-GCM — not a placeholder cipher.
 
 `sqlite3` can't write directly into ciphertext (that's what SQLCipher does
-at the page level, and there's no pure-Python build of it here) — so the
-working file lives in a private temp path for the life of the process, and
-only the encrypted bytes ever touch the path callers asked for. On open(),
-the on-disk file (if any) is decrypted into the temp path; every write
-flushes the temp file's bytes back to disk as fresh ciphertext, so a crash
-mid-session loses nothing more than a crash would have lost against a
-plain sqlite file.
+at the page level, and there's no pure-Python build of it here), but its
+stdlib `Connection.serialize()`/`deserialize()` (3.11+) move a whole
+database to/from an in-memory bytes object — so the working connection is
+opened against `:memory:` and plaintext never touches disk at all. On
+open(), the on-disk ciphertext (if any) is decrypted straight into the
+in-memory connection. Every write serializes the in-memory connection and
+re-encrypts it back to disk. A first pass of this (M16 security-audit
+review) decrypted into a private temp *file* instead — fixed here because
+an unclean kill (SIGKILL, OOM) would have left that temp file's plaintext
+sitting on disk indefinitely.
 """
 
 import os
-import tempfile
-from pathlib import Path
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 _NONCE_LEN = 12
 
 
-def load_or_create_key(key_path: Path) -> bytes:
+def load_or_create_key(key_path) -> bytes:
     if key_path.exists():
         return key_path.read_bytes()
     key = AESGCM.generate_key(bit_length=256)
@@ -31,19 +32,19 @@ def load_or_create_key(key_path: Path) -> bytes:
     return key
 
 
-class EncryptedSqliteFile:
-    """Hands out a plaintext temp path for sqlite3 to open, while the
-    real on-disk path stays AES-256-GCM ciphertext between flushes."""
+class EncryptedSqliteDB:
+    """Owns an in-memory sqlite3 connection whose bytes are AES-256-GCM
+    ciphertext at `enc_path` between flushes. Plaintext lives only in
+    process memory, never on disk."""
 
-    def __init__(self, enc_path: Path, key: bytes) -> None:
-        self.enc_path = Path(enc_path)
+    def __init__(self, enc_path, key: bytes) -> None:
+        import sqlite3
+
+        self.enc_path = enc_path
         self.aesgcm = AESGCM(key)
-        fd, tmp_name = tempfile.mkstemp(suffix=".sqlite")
-        os.close(fd)
-        os.chmod(tmp_name, 0o600)
-        self.tmp_path = Path(tmp_name)
+        self.conn = sqlite3.connect(":memory:")
         if self.enc_path.exists():
-            self.tmp_path.write_bytes(self._decrypt(self.enc_path.read_bytes()))
+            self.conn.deserialize(self._decrypt(self.enc_path.read_bytes()))
 
     def _decrypt(self, blob: bytes) -> bytes:
         nonce, ciphertext = blob[:_NONCE_LEN], blob[_NONCE_LEN:]
@@ -54,7 +55,4 @@ class EncryptedSqliteFile:
         return nonce + self.aesgcm.encrypt(nonce, data, None)
 
     def flush(self) -> None:
-        self.enc_path.write_bytes(self._encrypt(self.tmp_path.read_bytes()))
-
-    def cleanup(self) -> None:
-        self.tmp_path.unlink(missing_ok=True)
+        self.enc_path.write_bytes(self._encrypt(self.conn.serialize()))

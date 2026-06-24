@@ -109,7 +109,9 @@ What works:
   fingerprint/face prompt) via `biometric.py`'s `BiometricGate`, gated at
   the Bridge Layer the same way the M6 allowlist check is; a wrong
   passphrase re-prompts, a correct one unlocks the `finance` domain for the
-  rest of the session so further payments dispatch silently
+  rest of the session so further `balance`/payment calls dispatch silently
+  (both are gated — M16's audit found `balance` had been dispatching
+  unauthenticated, against PRD §15's "personal data retrieval" wording)
 - **Keyboard system (mock, Phase 3 M14, PRD §14):** `keyboard mode compact`
   / `standard` / `voice first` / `adaptive` switch input mode; `[keyboard]`
   strip shows the active non-Standard mode. **Compact** expands a small set
@@ -131,7 +133,9 @@ What works:
   RAM-only Session memory. Logged on every dispatched call/message/payment
   in `bridge.py`; rows older than 90 days are pruned on each write so the
   table stays a true rolling window. Piped/scripted runs use an in-memory
-  DB, same pattern as `user_memory.py`
+  DB, same pattern as `user_memory.py`. Gated by the Biometric Gate as of
+  M16 — relationship history is "personal data retrieval" under PRD §15
+  too, not just finance
 - **Full-screen overlays (Phase 3 M15, PRD §8, TUI only):** `show media` /
   `show maps` / `show photos` push a placeholder full-screen `Screen`
   (`overlays.py`) over the chat in the TUI — single dismiss gesture is
@@ -139,6 +143,24 @@ What works:
   call/timer/media keeps going underneath. In the line REPL the same
   commands just print the content inline — no overlay support there by
   design (TUI only per `plans.md`)
+- **Memory encryption at rest (Phase 4 M18, PRD §15):** `user_memory.db`
+  and `episodic_memory.db` are AES-256-GCM ciphertext on disk
+  (`crypto_store.py`) — the project's first dependency outside the
+  standard library (`cryptography`). Plaintext never touches disk: the
+  working sqlite connection lives entirely in memory
+  (`sqlite3.Connection.serialize()`/`deserialize()`, stdlib 3.11+) and is
+  re-encrypted back to its on-disk path after every write. In-memory
+  (piped/scripted) runs skip this entirely — no file to protect
+- **Security audit (Phase 4 M16, PRD §15):** reviewed the Bridge Layer,
+  Biometric Gate, and Android container against Container
+  Isolation/Permission Model/Biometric Gate. Found and fixed: the
+  Biometric Gate had only covered `send_payment`, leaving `balance` and
+  `episode_history` ("personal data retrieval" per PRD §15) dispatching
+  unauthenticated; `no, primary`/`no, secondary` corrections bypassed the
+  gate entirely by calling the Bridge directly instead of through the
+  gate-checking dispatch path; and M18's own first pass at encryption
+  decrypted to a plaintext temp file that an unclean kill would have left
+  on disk — replaced with the in-memory approach above
 
 ## Running
 

@@ -22,9 +22,18 @@ from .memory import FocusSession, SessionMemory
 from .notifications import QuietQueue
 from .user_memory import UserMemory
 
-# Tool → Biometric Gate domain (PRD §15). Checked by the Shell before
-# dispatch so a pending biometric challenge can pause the turn.
-SENSITIVE_TOOLS = {"send_payment": "finance"}
+# Tool → Biometric Gate domain (PRD §15: "banking, payments, personal data
+# retrieval"). Checked by the Shell before dispatch so a pending biometric
+# challenge can pause the turn. `balance` is personal financial data, not
+# just `send_payment` — both share the "finance" domain so one unlock
+# covers both for the rest of the session. `episode_history` surfaces
+# relationship/contact history, the clearest "personal data retrieval"
+# outside finance, so it gets its own domain.
+SENSITIVE_TOOLS = {
+    "send_payment": "finance",
+    "balance": "finance",
+    "episode_history": "episodic",
+}
 
 
 class Bridge:

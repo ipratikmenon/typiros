@@ -52,8 +52,8 @@ find file budget
 recent files
 find file zzz
 balance
-send 20 to mom
 1234
+send 20 to mom
 balance
 send 5 to mom
 keyboard mode compact
@@ -71,6 +71,7 @@ what did i miss
 end call
 keyboard mode standard
 history with lena
+1234
 history
 show media
 show maps

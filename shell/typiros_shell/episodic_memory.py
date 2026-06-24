@@ -20,7 +20,7 @@ import sqlite3
 import time
 from pathlib import Path
 
-from .crypto_store import EncryptedSqliteFile, load_or_create_key
+from .crypto_store import EncryptedSqliteDB, load_or_create_key
 
 DEFAULT_DB_PATH = Path(__file__).resolve().parent / "episodic_memory.db"
 DEFAULT_KEY_PATH = Path(__file__).resolve().parent / "episodic_memory.key"
@@ -48,8 +48,8 @@ class EpisodicMemory:
             self.conn = sqlite3.connect(db_path)
         else:
             key = load_or_create_key(Path(key_path))
-            self._enc = EncryptedSqliteFile(Path(db_path), key)
-            self.conn = sqlite3.connect(self._enc.tmp_path)
+            self._enc = EncryptedSqliteDB(Path(db_path), key)
+            self.conn = self._enc.conn
         self.conn.executescript(SCHEMA)
         self.conn.commit()
         self._persist()
@@ -86,5 +86,3 @@ class EpisodicMemory:
 
     def close(self) -> None:
         self.conn.close()
-        if self._enc is not None:
-            self._enc.cleanup()

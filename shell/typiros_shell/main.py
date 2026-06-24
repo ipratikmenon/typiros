@@ -97,6 +97,11 @@ class Shell:
     # ----- correction flow (PRD §11: "No, Secondary." OS remembers) -----
 
     def _correct(self, value: str) -> str:
+        # Routed through _dispatch(), not bridge.dispatch() directly, so a
+        # corrected redispatch still passes the Biometric Gate (PRD §15) if
+        # last_dispatch ever tracks a sensitive tool — it doesn't today
+        # (make_call/send_message only), but this keeps the gate uniform
+        # regardless of entry point rather than relying on that staying true.
         if not self.memory.last_dispatch:
             return "Nothing to correct yet."
         tool, args = self.memory.last_dispatch
@@ -104,11 +109,11 @@ class Shell:
         if low == "whatsapp":
             if tool != "send_message":
                 return "Can't switch that to WhatsApp."
-            return self.bridge.dispatch(tool, {**args, "channel": "whatsapp"})
+            return self._dispatch(tool, {**args, "channel": "whatsapp"})
         new_sim = value.title()
         if tool == "make_call":
-            self.bridge.dispatch("end_call", {})  # hang up before redialling
-        result = self.bridge.dispatch(tool, {**args, "sim": new_sim})
+            self._dispatch("end_call", {})  # hang up before redialling
+        result = self._dispatch(tool, {**args, "sim": new_sim})
         self.user_memory.set_sim_preference(args["contact"].name, new_sim)
         return result
 

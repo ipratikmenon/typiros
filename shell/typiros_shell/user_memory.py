@@ -11,7 +11,7 @@ scripted/piped runs keep using a plain in-memory sqlite db, same as before.
 import sqlite3
 from pathlib import Path
 
-from .crypto_store import EncryptedSqliteFile, load_or_create_key
+from .crypto_store import EncryptedSqliteDB, load_or_create_key
 
 DEFAULT_DB_PATH = Path(__file__).resolve().parent / "user_memory.db"
 DEFAULT_KEY_PATH = Path(__file__).resolve().parent / "user_memory.key"
@@ -44,8 +44,8 @@ class UserMemory:
             self.conn = sqlite3.connect(db_path)
         else:
             key = load_or_create_key(Path(key_path))
-            self._enc = EncryptedSqliteFile(Path(db_path), key)
-            self.conn = sqlite3.connect(self._enc.tmp_path)
+            self._enc = EncryptedSqliteDB(Path(db_path), key)
+            self.conn = self._enc.conn
         self.conn.executescript(SCHEMA)
         self.conn.commit()
         self._persist()
@@ -99,5 +99,3 @@ class UserMemory:
 
     def close(self) -> None:
         self.conn.close()
-        if self._enc is not None:
-            self._enc.cleanup()

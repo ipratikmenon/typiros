@@ -126,11 +126,35 @@ Detailed scope in [plans.md](plans.md#phase-4-plan--hardening). ROM packaging
 and battery optimization are hardware-only and out of scope; performance
 profiling and the security audit are genuinely buildable in this sandbox.
 
-### M16 — Bridge Layer + container isolation security audit
-- [ ] Review `bridge.py` + `backends/android.py` against PRD §15 (Container
-      Isolation, Permission Model, Biometric Gate)
-- [ ] Document findings (gaps, not just confirmations)
-- [ ] Fix what's fixable with stdlib only
+### M16 — Bridge Layer + container isolation security audit ✅ (2026-06-24)
+- [x] Reviewed `bridge.py`, `main.py`, `biometric.py`, `backends/android.py`,
+      `backends/finance.py` against PRD §15 (Container Isolation,
+      Permission Model, Biometric Gate)
+- [x] Finding 1 (real gap): Biometric Gate covered `send_payment` only —
+      PRD §15 says "banking, payments, **personal data retrieval**";
+      `balance` and `episode_history` dispatched unauthenticated. Fixed:
+      `SENSITIVE_TOOLS` now also gates `balance` (finance domain) and
+      `episode_history` (its own domain)
+- [x] Finding 2 (latent landmine, not currently exploitable): `_correct()`
+      called `bridge.dispatch()` directly, bypassing the gate `main.py`'s
+      `_dispatch()` enforces everywhere else. Not reachable today (only
+      `make_call`/`send_message` ever populate `last_dispatch`) but fixed
+      so the gate stays uniform regardless of entry point
+- [x] Finding 3 (self-audit of M18): the just-shipped `crypto_store.py`
+      decrypted into a plaintext temp file on disk for sqlite3 to open —
+      an unclean kill (SIGKILL/OOM) would've left that plaintext sitting
+      in `/tmp` indefinitely. Fixed by switching to stdlib
+      `sqlite3.Connection.serialize()`/`deserialize()` (3.11+, in-memory
+      DB) — plaintext now never touches disk at all
+- [x] Confirmed compliant (no fix needed): `AndroidContainer` has no
+      access to User/Episodic memory; `enable_app` can't desync the
+      allowlist (container raises before the User-memory write); container
+      message history is RAM-only and doesn't persist across restarts —
+      stricter than PRD's "WhatsApp history may persist" allowance, not a
+      violation
+- [x] `demo.txt` updated for the two newly-gated tools (passphrase moved
+      earlier for `balance`, added before `history with lena`); re-ran
+      end-to-end, exit 0
 
 ### M17 — Tier 1 performance profiling
 - [ ] Benchmark script: `intent.parse` + `Bridge.dispatch` latency across the

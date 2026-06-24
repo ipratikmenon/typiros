@@ -4,6 +4,51 @@ Reverse-chronological. Every working session gets an entry.
 
 ---
 
+## 2026-06-24 — Session 19: Phase 4 M16 — Security audit
+
+- Read through `bridge.py`, `main.py`, `biometric.py`,
+  `backends/android.py`, `backends/finance.py` against PRD §15 (Container
+  Isolation, Permission Model, Biometric Gate) — a real review with
+  findings, not a confirmation pass.
+- **Real gap fixed:** `SENSITIVE_TOOLS` (the Biometric Gate's tool→domain
+  map) only listed `send_payment`. PRD §15 explicitly says "banking,
+  payments, **personal data retrieval**" — `balance` and `episode_history`
+  were dispatching with no gate at all. Added both: `balance` joins the
+  `finance` domain (one unlock covers both balance checks and payments),
+  `episode_history` gets its own `episodic` domain. Updated `demo.txt`
+  (moved the `1234` earlier for `balance`, added one before `history with
+  lena`) and re-ran end-to-end — exit 0, gate fires once per domain then
+  stays silent, exactly as designed.
+- **Latent landmine fixed:** `main.py`'s `_correct()` ("no, primary" /
+  "no, secondary" / "no, whatsapp") called `self.bridge.dispatch()`
+  directly instead of going through `_dispatch()`, which is the only
+  place that checks `SENSITIVE_TOOLS` before letting a call through. Not
+  exploitable today — `last_dispatch` only ever holds `make_call` or
+  `send_message` — but it meant the gate's enforcement depended on every
+  call site remembering to use the right method rather than being
+  structurally uniform. Switched both call sites to `_dispatch()`.
+- **Self-audit catch:** turned the same scrutiny on M18's own code from
+  last session and found a real one — `crypto_store.py`'s first version
+  decrypted the on-disk ciphertext into a plaintext temp file for sqlite3
+  to open directly, and only deleted it in `close()`. A SIGKILL or OOM
+  kill mid-session would have left that plaintext sitting in `/tmp`
+  indefinitely — exactly the kind of crash-residue gap "encryption at
+  rest" is supposed to prevent. Fixed by switching to stdlib
+  `sqlite3.Connection.serialize()`/`deserialize()` (3.11+): the working
+  connection is `:memory:` only, decrypted bytes go straight into it, and
+  `serialize()` produces the bytes to re-encrypt on flush — plaintext
+  never touches disk in any form. Verified no stray `.sqlite` files appear
+  in `/tmp` after a run.
+- **Confirmed compliant, no fix needed:** `AndroidContainer` has zero
+  access to the User/Episodic memory objects (clean layering, never
+  imported); `enable_app`'s container-then-user_memory write order means
+  a rejected app (not installed) can't desync the two; container message
+  history is RAM-only and doesn't survive a restart, which is *stricter*
+  than PRD §15's "WhatsApp history may persist" allowance, not a
+  violation of it.
+- Next: M17 (Tier 1 performance profiling) — last Phase 4 milestone with
+  no open decisions blocking it.
+
 ## 2026-06-24 — Session 18: Phase 4 M18 — Memory encryption at rest
 
 - Asked the user whether to add a dependency to honor PRD §15's SQLCipher
