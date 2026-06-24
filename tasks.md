@@ -170,10 +170,28 @@ profiling and the security audit are genuinely buildable in this sandbox.
 ### M18 — Memory encryption at rest ✅ (2026-06-24)
 - [x] User decision: add `cryptography` as the project's first
       non-stdlib dependency (`shell/requirements.txt`)
-- [x] `crypto_store.py`: AES-256-GCM encryption-at-rest — sqlite3 opens a
-      private temp-file copy; ciphertext is flushed back to the real path
-      after every write; per-file key stored alongside (`0o600`)
+- [x] `crypto_store.py`: AES-256-GCM encryption-at-rest. First pass
+      decrypted into a private temp-file copy for sqlite3 to open
+      directly; M16's security audit found that left plaintext on disk
+      across an unclean kill, so it was replaced with stdlib
+      `sqlite3.Connection.serialize()`/`deserialize()` (3.11+) — the
+      working connection is `:memory:` only and plaintext never touches
+      disk in any form; ciphertext is written back after every write,
+      with the per-file key stored alongside (`0o600`)
 - [x] `user_memory.py` / `episodic_memory.py` wired to `crypto_store.py`
       for any non-`:memory:` db path; piped/scripted runs unaffected
 - [x] Verified: on-disk `.db` files contain no SQLite header and no
-      plaintext field values; reopening after "restart" decrypts correctly
+      plaintext field values; reopening after "restart" decrypts
+      correctly; no stray plaintext files left in `/tmp`
+
+### M19 — Custom Android ROM packaging — [-] dropped (out of scope)
+Needs a real AOSP build environment and target hardware; nothing to
+prototype in a Python shell. See [plans.md](plans.md#phase-4-plan--hardening).
+
+### M20 — Battery optimization — [-] dropped (out of scope)
+Needs real hardware power telemetry to optimize against; not modelable
+against a mock. See [plans.md](plans.md#phase-4-plan--hardening).
+
+**Phase 4 complete (2026-06-24).** M16–M18 shipped; M19/M20 are explicitly
+out of scope for this sandbox (hardware-only, no mock would be meaningful)
+and stay dropped rather than open — see `plans.md` for the reasoning.

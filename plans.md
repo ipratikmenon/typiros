@@ -215,7 +215,7 @@ shell/typiros_shell/
 
 ---
 
-## Phase 4 Plan — Hardening
+## Phase 4 Plan — Hardening ✅ complete (2026-06-24)
 
 PRD §16's Phase 4 bullets, against what's actually buildable in this sandbox:
 
@@ -243,21 +243,34 @@ is now the project's first dependency outside the standard library
 
 ### Milestones
 
-- **M16 — Bridge Layer + container isolation security audit:** read through
-  `bridge.py` and `backends/android.py` against PRD §15's Container Isolation /
-  Permission Model / Biometric Gate requirements; document findings (gaps, not
-  just confirmations) and fix what's fixable with stdlib only.
-- **M17 — Tier 1 performance profiling:** a benchmark script timing grammar
-  parse (`intent.parse`) + `Bridge.dispatch` across the full grammar surface,
-  reported against the PRD's <500ms target with the sandbox-CPU caveat stated
-  up front.
-- **M18 — Memory encryption at rest (blocked on user decision above).**
+- **M16 — Bridge Layer + container isolation security audit ✅:** read through
+  `bridge.py`, `main.py`, `biometric.py`, `backends/android.py`, and
+  `backends/finance.py` against PRD §15's Container Isolation / Permission
+  Model / Biometric Gate requirements. Found and fixed three real gaps —
+  `SENSITIVE_TOOLS` only covered `send_payment` (PRD §15 also names
+  "personal data retrieval"; `balance`/`episode_history` now gated too);
+  `_correct()` bypassed the gate by calling the Bridge directly instead of
+  the gate-checking dispatch path; and M18's first cut at encryption left
+  plaintext in a temp file on disk, caught by turning the same audit on
+  the prior session's own code.
+- **M17 — Tier 1 performance profiling ✅:** `benchmark.py` times
+  `intent.parse` and a full `Shell.handle()` turn across every grammar
+  branch, reported against the PRD's <500ms target with the sandbox-CPU
+  caveat stated up front. Worst case observed: 0.74ms — ~700x under
+  target on this hardware.
+- **M18 — Memory encryption at rest ✅:** user chose to add `cryptography`
+  as the project's first dependency; `crypto_store.py` does real
+  AES-256-GCM via stdlib `sqlite3.serialize()`/`deserialize()` so
+  plaintext never touches disk.
+- **M19 — Custom Android ROM packaging — dropped (out of scope).**
+- **M20 — Battery optimization — dropped (out of scope).**
 
-### Explicitly out of scope for Phase 4 (sandbox)
+### Explicitly out of scope for Phase 4 (sandbox) — M19/M20
 
 - Custom Android ROM / AOSP packaging — needs real hardware build environment
 - Battery optimization — needs real hardware power telemetry
-- True target-hardware performance numbers — sandbox CPU isn't representative
+- True target-hardware performance numbers — sandbox CPU isn't representative;
+  M17's numbers are a software-path sanity check, not a hardware guarantee
 
 ---
 

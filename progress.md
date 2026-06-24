@@ -4,6 +4,32 @@ Reverse-chronological. Every working session gets an entry.
 
 ---
 
+## 2026-06-24 — Session 21: Phase 4 formally closed
+
+- Fixed a stale doc: `tasks.md`'s M18 bullet still described the
+  superseded plaintext-temp-file encryption approach (replaced during
+  M16's self-audit with `sqlite3.serialize()`/`deserialize()`). Rewrote
+  it to match what actually shipped.
+- Added explicit M19 (custom Android ROM packaging) and M20 (battery
+  optimization) entries to `tasks.md`, both marked `[-]` dropped rather
+  than left as an implicit gap — both need real hardware/AOSP this
+  sandbox can't provide, and no mock would be a meaningful prototype of
+  either. Added a closing "Phase 4 complete" line summarizing M16–M18
+  shipped, M19/M20 dropped.
+- `plans.md`: marked the Phase 4 heading "✅ complete," rewrote the
+  Milestones subsection with full summaries for M16/M17/M18 and explicit
+  dropped lines for M19/M20, renamed the out-of-scope list heading to
+  name M19/M20 directly, and added a caveat that M17's numbers are a
+  software-path sanity check, not a target-hardware guarantee.
+- `shell/README.md`: top heading and intro now say "Phases 1–4
+  prototype," summarizing that every sandbox-feasible Phase 4 milestone
+  (security audit, performance profiling, real encryption at rest) is
+  done, with a pointer to `plans.md` for the two hardware-only items
+  that stay out of scope and a note that Phase 5 (hardware) is next.
+- Re-ran `demo.txt` end-to-end after this documentation-only batch —
+  exit 0, no regression (expected; no code touched this session).
+- Phase 4 is now fully and formally closed.
+
 ## 2026-06-24 — Session 20: Phase 4 M17 — Tier 1 performance profiling
 
 - Added `benchmark.py`: times `intent.parse()` alone (the literal Tier 1

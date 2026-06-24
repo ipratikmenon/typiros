@@ -3,15 +3,18 @@
 The chat-window UI — the entire user-facing surface of typirOS (PRD §8),
 typing-first and distraction-free (PRD §19).
 
-## Phases 1–3 prototype (runnable now)
+## Phases 1–4 prototype (runnable now)
 
 A Python implementation of the single loop (PRD §3): deterministic Tier 1
 grammar parser → Bridge Layer → mock backends → one-line confirmation.
-Covers every milestone through Phase 3 (full agent coverage, keyboard
-system, episodic memory, full-screen overlays) — see
-[plans.md](../plans.md) for what's next. Stdlib-only through Phase 3;
-Phase 4 M18 adds the project's first dependency (`cryptography`, for real
-memory encryption at rest — see below).
+Covers every sandbox-feasible milestone through Phase 4 (full agent
+coverage, keyboard system, episodic memory, full-screen overlays, a
+security audit, performance profiling, and real encryption at rest) — see
+[plans.md](../plans.md) for what's left (Phase 4's two hardware-only
+items, ROM packaging and battery optimization, stay out of scope; Phase 5
+hardware is next). Stdlib-only through Phase 3; Phase 4 M18 adds the
+project's first dependency (`cryptography`, for real memory encryption at
+rest — see below).
 
 ```bash
 cd shell
