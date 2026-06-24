@@ -25,16 +25,19 @@ MACRO_DEF_RE = re.compile(r"when i type (\S+),\s*(.+)", re.IGNORECASE)
 
 
 class Shell:
-    def __init__(self) -> None:
+    def __init__(self, db_path: str | None = None, episodic_db_path: str | None = None) -> None:
         self.memory = SessionMemory()
         self.queue = QuietQueue()
         self.echo_input = not sys.stdin.isatty()
         # Scripted/piped runs (demo.txt, tests) stay ephemeral so they're
         # reproducible; interactive runs persist to the User memory layer.
-        db_path = ":memory:" if self.echo_input else DEFAULT_DB_PATH
+        # Callers (e.g. benchmark.py) can force ":memory:" explicitly too.
+        if db_path is None:
+            db_path = ":memory:" if self.echo_input else DEFAULT_DB_PATH
         self.user_memory = UserMemory(db_path)
         self.memory.macros.update(self.user_memory.macros())
-        episodic_db_path = ":memory:" if self.echo_input else DEFAULT_EPISODIC_DB_PATH
+        if episodic_db_path is None:
+            episodic_db_path = ":memory:" if self.echo_input else DEFAULT_EPISODIC_DB_PATH
         self.episodic_memory = EpisodicMemory(episodic_db_path)
         self.bridge = Bridge(self.memory, self.queue, self.user_memory, self.episodic_memory)
         self.sim = EventSimulator(self.queue)

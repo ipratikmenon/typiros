@@ -161,6 +161,15 @@ What works:
   gate-checking dispatch path; and M18's own first pass at encryption
   decrypted to a plaintext temp file that an unclean kill would have left
   on disk — replaced with the in-memory approach above
+- **Performance profiling (Phase 4 M17, PRD §16):** `python3 -m
+  typiros_shell.benchmark` times `intent.parse()` alone and a full
+  `Shell.handle()` turn (parse + Bridge dispatch + translation) across one
+  phrase per grammar branch, 200 reps each. Worst case observed on this
+  sandbox's CPU: 0.74ms for a full turn — about 700x under the PRD's
+  <500ms target. Stated caveat: this is a software-path sanity check
+  (deterministic regex/dict dispatch, no model inference), not a
+  target-hardware latency guarantee — a real phone SoC wasn't available
+  to benchmark against
 
 ## Running
 
@@ -169,6 +178,7 @@ cd shell
 python3 -m typiros_shell           # line REPL (Phase 1 M1–M4 baseline)
 python3 -m typiros_shell --tui     # Textual TUI (Phase 1 M5)
 python3 -m typiros_shell < demo.txt  # scripted end-to-end demo
+python3 -m typiros_shell.benchmark   # Tier 1 performance profile (Phase 4 M17)
 ```
 
 ## TUI (M5)
@@ -206,6 +216,7 @@ typiros_shell/
 ├── keyboard.py       # Keyboard System (PRD §14): Compact/Standard/Voice First/Adaptive modes
 ├── episodic_memory.py # Episodic memory layer: sqlite-backed rolling 90-day log of contact-tied actions
 ├── overlays.py       # Full-screen overlay Screens (Media/Maps/Photos placeholders) — tui.py only
+├── benchmark.py      # Tier 1 performance profiling (M17): intent.parse + Shell.handle latency
 └── backends/         # mocks with PRD §5 tool-manifest signatures
     ├── telephony.py  # make_call / end_call / send_message
     ├── device.py     # set_setting

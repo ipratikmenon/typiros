@@ -4,6 +4,34 @@ Reverse-chronological. Every working session gets an entry.
 
 ---
 
+## 2026-06-24 — Session 20: Phase 4 M17 — Tier 1 performance profiling
+
+- Added `benchmark.py`: times `intent.parse()` alone (the literal Tier 1
+  deterministic-grammar stage) and a full `Shell.handle()` turn (parse +
+  Bridge dispatch + translation) across one representative phrase per
+  grammar branch in `intent.py`, 200 reps each, reporting mean/p50/p95/max.
+  Pre-unlocks the Biometric Gate's `finance`/`episodic` domains first so
+  `balance`/payment/`history` phrases measure steady-state dispatch rather
+  than the one-time challenge pause — that pause is a real but separate
+  cost, not representative of per-command latency.
+- Gave `Shell.__init__` two optional `db_path`/`episodic_db_path`
+  parameters (default behavior unchanged — still the stdin-tty-based
+  `:memory:` vs. persistent-file choice) so the benchmark can force
+  `:memory:` without touching disk or duplicating the constructor.
+- Result on this sandbox's CPU: worst-case 0.36ms for `intent.parse()`
+  alone, 0.74ms for a full turn — roughly 700x under the PRD's <500ms
+  target. Stated the caveat plainly in the script's own output and in
+  `README.md`: this confirms the software path has no gross inefficiency
+  (deterministic regex/dict dispatch, no model inference in the loop),
+  not a target-hardware latency guarantee — no real phone SoC available
+  to benchmark against in this sandbox.
+- Re-ran `demo.txt` end-to-end after the `Shell.__init__` signature
+  change — exit 0, no behavior change for existing callers.
+- This was the last Phase 4 milestone with no open decisions blocking it.
+  All three Phase 4 milestones (M16, M17, M18) are now done — Phase 4 is
+  complete except for the explicitly-out-of-scope hardware items (ROM
+  packaging, battery optimization) noted in `plans.md`.
+
 ## 2026-06-24 — Session 19: Phase 4 M16 — Security audit
 
 - Read through `bridge.py`, `main.py`, `biometric.py`,

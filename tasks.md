@@ -156,10 +156,16 @@ profiling and the security audit are genuinely buildable in this sandbox.
       earlier for `balance`, added before `history with lena`); re-ran
       end-to-end, exit 0
 
-### M17 — Tier 1 performance profiling
-- [ ] Benchmark script: `intent.parse` + `Bridge.dispatch` latency across the
-      full grammar surface
-- [ ] Report against PRD's <500ms target, with sandbox-CPU caveat stated
+### M17 — Tier 1 performance profiling ✅ (2026-06-24)
+- [x] `benchmark.py`: times `intent.parse()` alone and a full `Shell.handle()`
+      turn (parse + Bridge dispatch + translation) across one phrase per
+      grammar branch, 200 reps each, mean/p50/p95/max
+- [x] Pre-unlocks the Biometric Gate's `finance`/`episodic` domains so
+      `balance`/`send <amt>`/`history` measure steady-state dispatch, not
+      the one-time challenge pause
+- [x] Reported against PRD's <500ms target with the sandbox-CPU caveat
+      stated up front and in the output — worst case observed: 0.74ms
+      full-turn, ~700x under target on this hardware
 
 ### M18 — Memory encryption at rest ✅ (2026-06-24)
 - [x] User decision: add `cryptography` as the project's first
