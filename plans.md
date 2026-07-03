@@ -274,6 +274,77 @@ is now the project's first dependency outside the standard library
 
 ---
 
+## Phase 6 Plan — The Power-User Compact
+
+**Goal (PRD §20, v1.3):** the "revolution for nerds" wave — *opacity by
+default, sovereignty on demand*. Phase 5 (hardware) stays deferred and
+independent; Phase 6 is pure software and proceeds in this sandbox the same
+way Phases 1–4 did: real mechanisms where feasible, mocks behind real
+interfaces where not. Full idea set and rationale: PRD §20.1–§20.19
+(WIF-018–WIF-035).
+
+### Sandbox feasibility over the 18 sections
+
+| PRD § | Idea | Sandbox-feasible? | Why |
+|---|---|---|---|
+| 20.1 | Glasnost Mode (`/why`, `/trace`) | Yes | Bridge already produces dispatch records; retain a per-turn trace and pretty-print it |
+| 20.2 | Open Skull (memory verbs) | Yes | sqlite layers exist (M9/M15); needs read/diff/forget verbs |
+| 20.3 | Egress Ledger | Partial | No real network stack; mock backends can log attributed "egress" and expose the query verb |
+| 20.4 | Local-Only Hard Mode | Yes | A flag the tier router honors + honest degradation copy + digest-queued escalations |
+| 20.5 | Pipes | Yes | Pre-parser splits on `\|`; fold structured results through segments |
+| 20.6 | Hooks | Yes | Tiny rule engine + mock event emissions (battery tick, inbound SMS) |
+| 20.7 | The Wire | Yes (prototype) | The Shell loop is stdin/stdout already; a socket/CLI front-end is thin. Real key-auth hardening is P4-grade later work |
+| 20.8 | Webhook Inbox | Yes (prototype) | Local HTTP endpoint feeding the existing quiet queue |
+| 20.9 | Inline REPL | Yes | Restricted-`exec` sandbox; output joins the pipe grammar |
+| 20.10 | Sovereign Tier 2 (BYOM) | Partial | `tier2.py` grows a provider interface; a real local-HTTP backend needs an inference box this sandbox lacks |
+| 20.11 | Phone-as-Code | Yes | Config state serializes to plain text; `typir apply` reloads it |
+| 20.12 | tpkg | Partial | Local `tpkg install ./pack.yaml` merging verbs/macros is buildable; registry + signing is not |
+| 20.13 | The Forge | Thin | Mock generated-tool flow (write stub → show source → approve → hot-register); no real codegen without Tier 2 credentials |
+| 20.14 | Home agent | Yes (mock) | Ninth agent over a mock HA backend with fake entities, same pattern as every other agent |
+| 20.15 | Matrix channel | Thin | Mock channel only; real matrix-nio needs a homeserver |
+| 20.16 | Mesh Sync | No | Real CRDTs/multi-device out of scope, same convention as ROM/battery in Phase 4 |
+| 20.17 | grep-your-life | Yes | The shell sees every turn; append JSONL + query verb |
+| 20.18 | `/attest` | No | Meaningless without a reproducible build to attest; design sketch only |
+
+### Milestones
+
+- **M21 — Glasnost Mode:** per-turn structured trace retained by the Bridge;
+  `/why` pretty-prints the last one (parse → route → tool call → backend →
+  latency); `/trace on|off` streams live. The highest
+  evangelism-per-engineering-hour item — do it first.
+- **M22 — Pipes:** `|` in the deterministic pre-parser; each segment parses
+  normally; structured results fold left-to-right into the next segment's
+  input slot.
+- **M23 — Hooks:** `when <event>, <command>` / `every <interval>, <command>`
+  grammar; tiny rule engine; mock backends emit events (battery tick, inbound
+  SMS, focus start/end); `/hooks` lists/removes rules.
+- **M24 — Open Skull:** `memory show` / `memory forget <fact>` /
+  `memory edit` verbs over the existing User + Episodic sqlite layers.
+- **M25 — Local-Only Hard Mode:** `/airgap on|off`; tier router refuses
+  escalation while on; degradation in language; queued escalations surface in
+  the next digest.
+- **M26 — The Wire (prototype):** `typir` CLI / socket front-end driving the
+  same `Shell` instance — proves the phone-as-addressable-node shape;
+  real auth hardening deferred.
+- **M27 — Power-substrate extras (grab-bag, each small):** grep-your-life
+  JSONL lifelog + query verb; Inline REPL; Webhook Inbox (local HTTP →
+  quiet queue); Phone-as-Code (`typir apply` over plain-text config);
+  local-only `tpkg install <pack.yaml>`.
+- **M28 — Home agent (mock) + BYOM provider seam:** ninth agent over fake HA
+  entities; `tier2.py` provider interface with the ant-shaped default and a
+  stub `local-http` provider.
+
+### Explicitly out of scope for Phase 6 (sandbox)
+
+- Real Matrix homeserver integration (mock channel only)
+- Real CRDT mesh sync across devices
+- `/attest` beyond a design sketch — needs a reproducible build to attest
+- tpkg registry, signing, and distribution — local pack install only
+- The Forge with real Tier 2 codegen — mock flow only (no cloud credentials)
+- Real netfilter-level egress accounting — attributed mock-egress log only
+
+---
+
 ## Risks / Watch Items
 
 - **Grammar coverage ceiling:** deterministic parsing will miss phrasings; the

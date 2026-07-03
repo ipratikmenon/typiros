@@ -4,6 +4,40 @@ Reverse-chronological. Every working session gets an entry.
 
 ---
 
+## 2026-07-03 — Session 22: PRD v1.3 — the Power-User Compact (§20)
+
+- Excavation pass over the whole PRD, per the founder's brief: what more
+  would make typirOS the next big thing for nerds — a revolution, not an
+  increment. Ran an independent brainstorm alongside a manual pass; merged,
+  deduplicated against the PRD and the parked what-ifs backlog, and landed
+  on 18 new ideas in four pillars.
+- The core insight the addendum is built on: the PRD's founding principle
+  ("total opacity of mechanism") is exactly wrong for the hacker/self-hoster
+  audience — they don't trust what they can't inspect — and that tension is
+  the product opportunity. Thesis: **opacity by default, sovereignty on
+  demand** — the first phone that is yours the way your terminal is yours.
+  Inspectability, self-hosting, and user programmability are things the
+  incumbents structurally can't ship, which is what makes it defensible.
+- New **PRD §20 — The Power-User Compact (v1.3)**, 18 sections in four
+  pillars: **Glass Box** (Glasnost `/why` traces, Open Skull editable
+  memory, Egress Ledger, `/airgap` hard mode), **Programmable Substrate**
+  (Pipes, Hooks, The Wire/`typir` CLI, Webhook Inbox, Inline REPL),
+  **Sovereign Stack** (BYOM Tier 2, Phone-as-Code dotfiles, tpkg package
+  manager, The Forge self-written tools), **Native to Nerd Infrastructure**
+  (Home agent, Matrix channel, Mesh Sync, grep-your-life, `/attest`).
+  §20.19 ranks them: launch pillars are Glasnost + BYOM + Pipes + Hooks +
+  The Wire. Version bumped 1.2 → 1.3.
+- User decisions (asked): all 18 go into the PRD (not a curated subset),
+  and scope the build now — so `plans.md` gained a **Phase 6 Plan** with a
+  sandbox-feasibility table over all 18 and milestones M21–M28 (Glasnost
+  first: highest evangelism-per-engineering-hour), and `tasks.md` gained
+  the matching Phase 6 section, all `[ ]` todo.
+- What-If Protocol kept honest: all 18 logged as WIF-018–WIF-035, accepted
+  → PRD §20.x with phase estimates — same paper trail §19 left (this
+  session's protocol quota satisfied eighteen times over).
+- Docs-only session; re-ran `demo.txt` end-to-end anyway per the working
+  agreement — exit 0.
+
 ## 2026-06-24 — Session 21: Phase 4 formally closed
 
 - Fixed a stale doc: `tasks.md`'s M18 bullet still described the

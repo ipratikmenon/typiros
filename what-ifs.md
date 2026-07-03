@@ -78,6 +78,67 @@ Format: `WIF-NNN · status · phase estimate · one-line rationale`
 
 ## Accepted (moved to tasks.md / PRD)
 
+- **WIF-018 · accepted → PRD §20.1 · P2** — What if the user could ask the OS
+  "why did you do that?" and get a complete, honest answer? `/why` prints the
+  last turn's full trace (parse, tier route, tool-call JSON, backend, latency);
+  `/trace on` streams it live. Inverts Design Principle 3 per-user: opacity by
+  default, glass box on demand. Became Glasnost Mode.
+- **WIF-019 · accepted → PRD §20.2 · P2** — What if the OS's beliefs about you
+  were a file you own? `memory show/diff/forget/edit` over all three memory
+  layers — wrong inferences become fixable. Became Open Skull.
+- **WIF-020 · accepted → PRD §20.3 · P4** — What if privacy were falsifiable
+  instead of promised? Every byte leaving the device logged and attributed,
+  queryable in grammar, plus a chat-driven firewall. Became the Egress Ledger.
+- **WIF-021 · accepted → PRD §20.4 · P2** — What if the cloud tier had a
+  verifiable kill switch? `/airgap on` makes Tier 2 escalation impossible (not
+  discouraged), with honest degradation and queued escalations surfacing via
+  digest. Became Local-Only Hard Mode.
+- **WIF-022 · accepted → PRD §20.5 · P3** — What if `|` were a grammar
+  primitive and the chat window were an actual shell? Structured results feed
+  the next command's input slot; the pre-parser splits segments
+  deterministically. Became Pipes.
+- **WIF-023 · accepted → PRD §20.6 · P3** — What if the user could program the
+  phone's *behavior*, not just its apps? `when <event>, <command>` /
+  `every <schedule>, <command>` rules over an OS event bus. Became Hooks.
+- **WIF-024 · accepted → PRD §20.7 · P3–P4** — What if you could SSH into your
+  phone's conversation and drive it from scripts (`typir "message lena ..."`)?
+  Key-based auth, per-key capability scoping, gate domains enforced over the
+  wire. Became The Wire.
+- **WIF-025 · accepted → PRD §20.8 · P3** — What if your servers could post
+  into the quiet queue (CI failures, Grafana alerts) through an authenticated
+  webhook endpoint, hookable via WIF-023's rules? Became the Webhook Inbox.
+- **WIF-026 · accepted → PRD §20.9 · P3** — What if the "calculator" were a
+  sandboxed real interpreter (`py:` / jq scratchpad) with pipeable output?
+  Became the Inline REPL.
+- **WIF-027 · accepted → PRD §20.10 · P3** — What if Tier 2 were a pluggable
+  endpoint — your API key, your homelab GPU, Ollama over the LAN — with ant as
+  the managed default rather than the mandate? Became Sovereign Tier 2 (BYOM).
+- **WIF-028 · accepted → PRD §20.11 · P3** — What if all OS configuration
+  (macros, hooks, allowlist, modes) were plain-text files in a git repo, with
+  `typir apply` to converge the device? Dotfiles for your phone. Became
+  Phone-as-Code.
+- **WIF-029 · accepted → PRD §20.12 · P4** — What if capability packs (agent
+  YAMLs + verbs + macros + hooks) were signed, versioned, auditable-before-
+  install, and community-published — AUR for your phone's brain, gated by the
+  §19.9 allowlist pattern? Became tpkg.
+- **WIF-030 · accepted → PRD §20.13 · P4–P5** — What if the long tail of apps
+  were *generated on demand*? The OS writes a requested tool, shows the source
+  for review, sandboxes and registers it on approval. Became The Forge.
+- **WIF-031 · accepted → PRD §20.14 · P3** — What if a ninth System Agent
+  spoke Home Assistant/MQTT natively, compounding with Hooks (`when I leave
+  home, arm the alarm`)? Became the Home agent.
+- **WIF-032 · accepted → PRD §20.15 · P3–P4** — What if the flagship messaging
+  path were federated and self-hostable? Matrix as a first-class channel and a
+  fourth angle on the WhatsApp problem. Became §20.15.
+- **WIF-033 · accepted → PRD §20.16 · P4–P5** — What if memory layers and chat
+  history CRDT-synced across devices over LAN/VPN, E2E encrypted, with no
+  vendor account? Became Mesh Sync.
+- **WIF-034 · accepted → PRD §20.17 · P2** — What if every turn were appended
+  to a local queryable JSONL lifelog (`history | grep lena | last month`)?
+  Became grep-your-life.
+- **WIF-035 · accepted → PRD §20.18 · P5–P6** — What if the build were
+  reproducible and the runtime could attest to itself (`/attest`: system-prompt
+  hash, manifest version, model checksums)? Became §20.18.
 - **WIF-001 · accepted → PRD §19.1 · P1** — What if notifications were
   pull-based by default? Became the Quiet model.
 - **WIF-002 · accepted → PRD §19.3 · P1** — What if slash commands bypassed

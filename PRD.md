@@ -2,7 +2,7 @@
 
 ### AI-Native Conversational Mobile Operating System
 
-**Version 1.2 | Confidential**
+**Version 1.3 | Confidential**
 
 -----
 
@@ -27,6 +27,7 @@
 1. [Open Problems](#17-open-problems)
 1. [ant / Managed Agents Integration](#18-ant--managed-agents-integration)
 1. [Distraction-Free Typing-First Addendum (v1.2)](#19-distraction-free-typing-first-addendum-v12)
+1. [The Power-User Compact (v1.3)](#20-the-power-user-compact-v13)
 
 -----
 
@@ -891,5 +892,247 @@ typirOS development runs a continuous speculative-design loop:
 
 -----
 
-*typirOS PRD v1.2 — Confidential*
+## 20. The Power-User Compact (v1.3)
+
+v1.2 built the distraction-free, typing-first OS. v1.3 names the audience that
+will carry it to the world: hackers, self-hosters, terminal people,
+keyboard-driven-workflow people — the crowd that buys Framework laptops, runs
+Home Assistant, treats dotfiles as identity, and evangelizes what it trusts.
+
+For that audience, §2's Design Principle 3 (*"total opacity of mechanism"*) is
+exactly backwards: they do not trust what they cannot inspect. This addendum
+resolves the tension without breaking the product for everyone else:
+
+> **Opacity by default. Sovereignty on demand.**
+
+The pitch in one line: **the first phone that is yours the way your terminal is
+yours.** Every capability below cuts against the incumbents' business models —
+inspectability, self-hosting, and user programmability are things Apple and
+Google structurally cannot ship. That is what makes this a defensible
+revolution rather than a feature list.
+
+Four pillars:
+
+|Pillar|Claim|Sections|
+|---|---|---|
+|**Glass Box**|Privacy and mechanism are verifiable, not promised|20.1–20.4|
+|**Programmable Substrate**|The phone is a Unix node you can compose and script|20.5–20.9|
+|**Sovereign Stack**|You own the brain, the config, and the capability set|20.10–20.13|
+|**Native to Nerd Infrastructure**|First-class citizen of the homelab, not a silo|20.14–20.18|
+
+### Pillar I — Glass Box
+
+#### 20.1 Glasnost Mode *(amends §2, §6)*
+
+- `/why` after any action prints the full truthful trace of the last turn:
+  parsed intent, tier-routing decision (and the reason), the exact tool-call
+  JSON, which backend executed it, latency, and token cost. `/trace on`
+  streams the same live for every turn.
+- Design Principle 3 becomes a per-user posture, not a law: normies get
+  opacity; nerds get a glass box. For this audience, *seeing* the mechanism is
+  the trust mechanism.
+- No other OS has ever let the user ask "why did you do that?" and get a
+  complete, honest answer.
+- Bridge Layer consequence: every turn retains a structured trace object
+  (parse → route → dispatch → result → translation), whether or not anyone asks.
+
+#### 20.2 Open Skull — Inspectable, Editable Memory *(amends §13)*
+
+- `memory show`, `memory diff last week`, `memory forget philip's channel
+  preference`, `memory edit` — all three memory layers rendered as
+  human-readable records the user can read, correct, and delete line-by-line.
+- The OS's beliefs about you stop being a black-box store and become a file
+  you own; a wrong inference is fixable instead of haunting you.
+- Pairs with 20.1 as the two halves of one promise: **nothing about you is
+  hidden from you.**
+
+#### 20.3 Egress Ledger — Verifiable Privacy *(amends §6, §15)*
+
+- Every byte that leaves the device is logged and attributed — to a turn, a
+  tool call, or a container — and queryable in the grammar: `show network
+  today`, `what did the banking container send`.
+- A chat-driven firewall: `block facebook.com everywhere`.
+- §13/§15 *assert* on-device privacy; the ledger makes the claim
+  **falsifiable**, which is the only kind of privacy claim this audience
+  believes. "Trust us" becomes "check us."
+
+#### 20.4 Local-Only Hard Mode *(amends §5, §15, §19.1)*
+
+- `/airgap on` verifiably disables Tier 2 — not "prefers local" but *cannot
+  escalate*. The software sibling of a hardware mic switch.
+- The OS degrades honestly in language: "Can't summarise that offline — I can
+  queue it." Queued escalations surface via the §19.1 digest when the gate
+  reopens.
+- Makes typirOS the only phone that is fully itself on a plane, in a dead
+  zone, or in a country you don't trust.
+
+### Pillar II — Programmable Substrate
+
+#### 20.5 Pipes — the Grammar Is a Shell *(amends §10, §19.3)*
+
+- `|` becomes a first-class grammar primitive: `calendar tomorrow | summarize
+  | message lena`, `photos last week | filter receipts | email to accountant`.
+- Each command's structured output (§6 already normalises results) feeds the
+  next command's input slot. Composition, not just invocation: fifty verbs
+  compose into thousands of workflows nobody had to design.
+- The deterministic pre-parser (§19.7) splits on `|` with zero inference; each
+  segment then parses normally.
+- This is the moment terminal people recognize the OS as *theirs*.
+
+#### 20.6 Hooks — the OS as an Event Bus *(amends §10, §12, §19.1)*
+
+- Trigger→action rules in the same grammar: `when battery below 20, dnd on`;
+  `when message from mom arrives during focus, allow through`; `every monday
+  8am, run gm`.
+- `when` (§10) generalises from one hard-coded reminder condition to *any OS
+  event*; `every` adds schedules. `/hooks` lists and edits the rule set.
+- System Agents (§12) gain a responsibility: emitting events onto the bus.
+  The §19.1 notification queue becomes just one consumer of it.
+- No one has shipped a phone where the user programs the phone's *behavior*,
+  not just its apps.
+
+#### 20.7 The Wire — SSH Into Your Phone *(amends §19.6; extends §15)*
+
+- The chat loop is exposed as an authenticated line protocol: `ssh phone`
+  drops you into the same conversation from a laptop.
+- A `typir` CLI lets shell scripts drive the device: `typir "message lena
+  running late"`, `typir --json battery`. Your phone becomes an addressable
+  node in cron jobs, CI pipelines, and your editor config.
+- Security model: key-based auth, per-key capability scoping, Biometric Gate
+  (§15) domains enforced identically over the wire.
+- The one-line pitch that sells itself at every Linux meetup on earth:
+  **you can pipe your phone.**
+
+#### 20.8 Webhook Inbox — Your Infrastructure Talks Back *(amends §19.1)*
+
+- An authenticated endpoint (LAN/VPN-reachable) where external systems post
+  into the quiet notification queue: CI failure, Grafana alert, Home Assistant
+  event, `curl` from anywhere.
+- Inbound webhooks are hookable (20.6): `when webhook deploy-failed arrives,
+  mark urgent`.
+- The pull-based Quiet model now covers your *servers*, not just your
+  contacts — typirOS is the natural pager for self-hosters. The inbound half
+  of The Wire.
+
+#### 20.9 Inline REPL *(amends §7)*
+
+- A sandboxed real interpreter as an AI-native function: `> py: [x**2 for x
+  in range(10)]`, plus a scratch space for jq/awk one-liners.
+- Replaces §7's "calculator" row with the calculator this audience actually
+  wants. Output is pipeable (20.5).
+
+### Pillar III — Sovereign Stack
+
+#### 20.10 Sovereign Tier 2 — Bring Your Own Model *(amends §5, §18)*
+
+- Tier 2 escalation becomes a pluggable provider interface: `set brain to
+  ollama.homelab.lan` points the cloud tier at your own llama.cpp/vLLM box,
+  any compatible API, or a VPN-reachable homelab GPU.
+- ant / Anthropic Managed Agents (§18) remains the managed **default**, not
+  the mandate.
+- The purchase-deciding feature for self-hosters: a phone whose intelligence
+  you fully own is a category no vendor has ever shipped. It also converts
+  §5's "requires connectivity" weakness into a resilience story — your LAN
+  model works when the internet doesn't.
+
+#### 20.11 Phone-as-Code — Dotfiles for Your Phone *(amends §13, §16)*
+
+- Every piece of OS state that is *configuration* — macros, hooks, allowlist,
+  agent settings, keyboard mode, digest cadence — lives as plain-text files in
+  one directory that is a git repo. `typir apply` makes the device match the
+  files.
+- Wipe your phone, clone your repo, and you're home in ninety seconds. Share
+  your setup the way people share editor configs.
+- §13 consequence: the User memory layer splits into config-as-files
+  (versionable, shareable) vs. learned data (private, 20.2-inspectable).
+- Reproducibility is a value this crowd holds almost religiously; no mobile
+  OS has ever offered it.
+
+#### 20.12 tpkg — the Agent Package Manager *(amends §12, §18, §19.9)*
+
+- Community-authored capability packs — agent YAMLs, grammar verbs, macros,
+  hooks — installable via `tpkg install gtd`, signed, versioned, diffable,
+  from a public registry. AUR for your phone's brain.
+- §18's GitOps agent management is producer-side only; tpkg opens it to the
+  community and creates the ecosystem moat.
+- Packs are plain text, so they're **auditable before install**; the §19.9
+  allowlist gate extends naturally to third-party capabilities — restraint by
+  policy, again.
+
+#### 20.13 The Forge — the OS Writes Its Own Tools *(amends §7, §15, §18)*
+
+- "I need something that tracks my caffeine intake" → the OS (via §18's
+  agent runtime, which can already spawn agents) writes the tool, sandboxes
+  it, and registers it in the tool manifest — callable on the next turn.
+- Source is shown for review before activation (20.1 synergy); generated code
+  runs under an explicit §15 sandbox policy.
+- Strategy C (§7, "AI as the app") taken to its logical end: the long tail of
+  apps isn't curated, it's **generated on demand**. The single most "the
+  future arrived" demo in the deck.
+
+### Pillar IV — Native to Nerd Infrastructure
+
+#### 20.14 Home — the Ninth Agent *(amends §7, §12)*
+
+- A first-class **Home** agent speaking Home Assistant's API and MQTT
+  natively: `lights off downstairs`, `is the garage open`, and — compounding
+  with 20.6 — `when I leave home, arm the alarm`.
+- §12's roster grows to nine. The eight agents cover the phone; Home covers
+  the nerd's house, and Home Assistant's install base is precisely the target
+  buyer.
+- Conversational control of HA is *better* than HA's own dashboards — a case
+  where typirOS beats the incumbent tool, not just matches it.
+
+#### 20.15 Matrix as a First-Class Channel *(amends §7, §12)*
+
+- Native Matrix support: `message philip through matrix`, backed by your own
+  homeserver. The Communication agent treats it as a peer of SMS/WhatsApp.
+- A fourth angle on §7's WhatsApp Problem: bridges become the escape hatch,
+  and typirOS is the only phone whose flagship messaging path is federated
+  and self-hostable.
+- Ship it for credibility with the audience that sets everyone else's
+  opinions, not for volume.
+
+#### 20.16 Mesh Sync — Local-First Multi-Device State *(amends §13, §15)*
+
+- Memory layers and chat history CRDT-sync across your devices over
+  LAN/VPN with end-to-end encryption and **no vendor account**.
+- Start a thought on the phone, finish it via The Wire (20.7) on a laptop —
+  same conversation, same memory.
+- "Syncthing for your OS state." The §13 privacy guarantee extends across
+  devices without a cloud in the middle.
+
+#### 20.17 grep-your-life — the Transcript Is a Dataset *(amends §10, §13)*
+
+- Every turn is appended to a local, exportable JSONL log with a query
+  grammar over it: `history | grep lena | last month`. jq-able, yours.
+- The chat window quietly becomes the best lifelog ever built, because it is
+  a *complete* record of everything you asked your computer to do — and it
+  composes with Pipes (20.5) and Open Skull (20.2) for free.
+
+#### 20.18 `/attest` — Reproducible Builds, Runtime Attestation *(amends §15, §16)*
+
+- The ROM builds reproducibly from public source; `/attest` makes the runtime
+  prove itself on demand — hash of the running system prompt, tool-manifest
+  version, model checksums.
+- "The OS isn't injecting ads into my AI" becomes checkable, not vibes. The
+  long-game credibility play that multiplies trust in everything above.
+
+### 20.19 Positioning & Sequencing
+
+- **Launch pillars (Tier A):** Glasnost (20.1), Sovereign Tier 2 (20.10),
+  Pipes (20.5), Hooks (20.6), The Wire (20.7). Together they are one coherent
+  story — *verifiable, sovereign, programmable* — that no incumbent can copy
+  without betraying its business model.
+- **Strong differentiators (Tier B):** 20.2–20.4, 20.8, 20.11–20.14.
+- **Fast-follow credibility features (Tier C):** 20.9, 20.15–20.18 — shipped
+  to keep the promise honest, not to headline the launch.
+- Per §19.8, each section entered through the What-If Protocol
+  (WIF-018–WIF-035) and is triaged into build phases in `plans.md`
+  (Phase 6 — The Power-User Compact).
+
+-----
+
+*typirOS PRD v1.3 — Confidential*
 *“If the user has to think about how the phone is doing it, the OS has failed.”*
+*“…unless the user asks. Then the OS shows its work.”*

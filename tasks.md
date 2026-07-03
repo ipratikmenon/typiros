@@ -11,6 +11,7 @@ Strategy in [plans.md](plans.md) · log in [progress.md](progress.md) · ideas i
 - [x] PRD.md (v1.1) committed
 - [x] Agent YAML scaffold (8 agents) committed
 - [x] PRD v1.2 addendum — distraction-free typing-first (§19)
+- [x] PRD v1.3 addendum — the Power-User Compact (§20, WIF-018–035) (2026-07-03)
 - [x] Tracking system: plans.md, tasks.md, progress.md, what-ifs.md
 - [ ] Rename GitHub repo huashu-design → typiros (manual — needs repo Settings, owner action)
 
@@ -195,3 +196,50 @@ against a mock. See [plans.md](plans.md#phase-4-plan--hardening).
 **Phase 4 complete (2026-06-24).** M16–M18 shipped; M19/M20 are explicitly
 out of scope for this sandbox (hardware-only, no mock would be meaningful)
 and stay dropped rather than open — see `plans.md` for the reasoning.
+
+## Phase 6 — The Power-User Compact
+
+Detailed scope in [plans.md](plans.md#phase-6-plan--the-power-user-compact);
+vision in PRD §20 (v1.3). Phase 5 (hardware) stays deferred — Phase 6 is pure
+software and independent of it. "Opacity by default, sovereignty on demand."
+
+### M21 — Glasnost Mode (PRD §20.1)
+- [ ] Bridge retains a structured per-turn trace (parse → route → tool call → backend → latency)
+- [ ] `/why` pretty-prints the last turn's trace
+- [ ] `/trace on|off` streams the trace live for every turn
+
+### M22 — Pipes (PRD §20.5)
+- [ ] Deterministic pre-parser splits on `|`; each segment parses normally
+- [ ] Structured results fold left-to-right into the next segment's input slot
+
+### M23 — Hooks (PRD §20.6)
+- [ ] `when <event>, <command>` / `every <interval>, <command>` grammar
+- [ ] Rule engine + mock event emissions (battery tick, inbound SMS, focus start/end)
+- [ ] `/hooks` lists and removes rules
+
+### M24 — Open Skull (PRD §20.2)
+- [ ] `memory show` / `memory forget <fact>` / `memory edit` over the User + Episodic sqlite layers
+
+### M25 — Local-Only Hard Mode (PRD §20.4)
+- [ ] `/airgap on|off`; tier router refuses escalation while on
+- [ ] Honest degradation in language; queued escalations surface in the next digest
+
+### M26 — The Wire, prototype (PRD §20.7)
+- [ ] `typir` CLI / socket front-end driving the same `Shell` instance
+- [ ] Real key-based auth hardening deferred (out of sandbox scope)
+
+### M27 — Power-substrate extras (PRD §20.8, §20.9, §20.11, §20.12, §20.17)
+- [ ] grep-your-life: JSONL lifelog of every turn + query verb
+- [ ] Inline REPL: restricted sandbox, pipeable output
+- [ ] Webhook Inbox: local HTTP endpoint → quiet queue
+- [ ] Phone-as-Code: plain-text config dir + `typir apply`
+- [ ] tpkg (local only): `tpkg install <pack.yaml>` merges verbs/macros
+
+### M28 — Home agent (mock) + BYOM provider seam (PRD §20.14, §20.10)
+- [ ] Ninth agent over a mock Home Assistant backend with fake entities
+- [ ] `tier2.py` provider interface: ant-shaped default + stub `local-http` provider
+
+Out of sandbox scope (design-only, per plans.md): real Matrix integration,
+CRDT mesh sync (§20.16), `/attest` (§20.18), tpkg registry/signing, Forge
+codegen (§20.13 beyond a mock flow), real egress accounting (§20.3 beyond an
+attributed mock log).
